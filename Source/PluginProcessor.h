@@ -53,8 +53,16 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    void loadFile();
+
 private:
     Synthesiser mSampler;
+    const int mNumVoices{16};
+
+    AudioFormatManager mFormatManager;
+    AudioFormatReader* mFormatReader{ nullptr };
+
+    
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SammyAudioProcessor)
