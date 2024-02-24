@@ -54,6 +54,9 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     void loadFile();
+    void loadFile(const String& path);
+
+    int getNumSamlerSounds() { return mSampler.getNumSounds(); }
 
 private:
     Synthesiser mSampler;

@@ -175,6 +175,8 @@ void SammyAudioProcessor::setStateInformation (const void* data, int sizeInBytes
 
 void SammyAudioProcessor::loadFile()
 {
+    mSampler.clearSounds();
+
     FileChooser chooser{ "Load File" };
 
     if (chooser.browseForFileToOpen())
@@ -182,6 +184,20 @@ void SammyAudioProcessor::loadFile()
         auto file = chooser.getResult();
         mFormatReader = mFormatManager.createReaderFor(file);
     }
+    BigInteger range;
+    range.setRange(0, 128, true);
+
+    mSampler.addSound(new SamplerSound("Sample", *mFormatReader, range, 60, 0.1, 0.1, 120.0));
+}
+
+void SammyAudioProcessor::loadFile(const String& path)
+{
+    mSampler.clearSounds();
+
+    auto file = File(path);
+
+    mFormatReader = mFormatManager.createReaderFor(file);
+
     BigInteger range;
     range.setRange(0, 128, true);
 
