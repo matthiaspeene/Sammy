@@ -15,8 +15,7 @@
 /**
 */
 class SammyAudioProcessorEditor : public juce::AudioProcessorEditor,
-                                    public FileDragAndDropTarget,
-                                    public Slider::Listener
+                                    public FileDragAndDropTarget
 {
 public:
     SammyAudioProcessorEditor (SammyAudioProcessor&);
