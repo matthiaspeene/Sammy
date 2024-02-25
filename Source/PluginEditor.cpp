@@ -11,7 +11,7 @@
 
 //==============================================================================
 SammyAudioProcessorEditor::SammyAudioProcessorEditor (SammyAudioProcessor& p)
-    : AudioProcessorEditor (&p), processor (p)
+    : AudioProcessorEditor (&p), mWaveThumbnail(p), processor(p)
 {
     mLoadButton.onClick = [&]() { processor.loadFile(); };
     addAndMakeVisible(mLoadButton);
@@ -67,6 +67,8 @@ SammyAudioProcessorEditor::SammyAudioProcessorEditor (SammyAudioProcessor& p)
         mReleaseAttachment = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "RELEASE", mReleaseSlider);
     }
 
+    addAndMakeVisible(mWaveThumbnail);
+
     setSize (800, 300);
 }
 
@@ -80,40 +82,6 @@ void SammyAudioProcessorEditor::paint (juce::Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll(Colours::black);
     g.setColour(Colours::white);
-
-
-
-    if (mShouldBePainting)
-    {
-        Path p;
-        mAudioPoints.clear();
-
-        auto waveForm = processor.getWaveForm();
-        auto ratio = waveForm.getNumSamples() / getWidth();
-        auto buffer = waveForm.getReadPointer(0);
-
-        //scale x
-        for (int sample = 0; sample < waveForm.getNumSamples(); sample += ratio)
-        {
-            mAudioPoints.push_back(buffer[sample]);
-        }
-
-        // Start the path
-        p.startNewSubPath(0, getHeight() / 2);
-
-        // scale y
-        for (int sample = 0; sample < mAudioPoints.size(); ++sample)
-        {
-            auto point = jmap<float>(mAudioPoints[sample], -1.0f, 1.0f, 200.0f, 0.0f);
-
-            // Draw the line
-            p.lineTo(sample, point);
-        }
-
-        g.strokePath(p, PathStrokeType(2));
-
-        mShouldBePainting = false;
-    }
 
 
     /* Button drawing
@@ -134,6 +102,8 @@ void SammyAudioProcessorEditor::paint (juce::Graphics& g)
 
 void SammyAudioProcessorEditor::resized()
 {
+    mWaveThumbnail.setBoundsRelative(0.0f, 0.25f, 1.0f, 0.5f);
+
     const auto startY = 0.6f;
     const auto startX = 0.6f;
     const auto offset = 0.1f;
@@ -145,36 +115,6 @@ void SammyAudioProcessorEditor::resized()
     mDecaySlider.setBoundsRelative(startX + offset, startY, dialWith, dialHeight);
     mSustainSlider.setBoundsRelative(startX + 2 * offset, startY, dialWith, dialHeight);
     mReleaseSlider.setBoundsRelative(startX + 3 * offset, startY, dialWith, dialHeight);
-}
-
-bool SammyAudioProcessorEditor::isInterestedInFileDrag(const StringArray& files)
-{
-    for (auto file : files)
-    {
-        // Make sure all audio suported audio formats have been added.
-        if (file.endsWith(".wav") || file.endsWith(".mp3") || file.endsWith(".aif"))
-        {
-            return true;
-        }
-    }
-    // Give user some indication that their file type is not suported and return the supported file types.
-
-    return false;
-}
-
-void SammyAudioProcessorEditor::filesDropped(const StringArray& files, int x, int y)
-{
-    for (auto file : files)
-    {
-        if (isInterestedInFileDrag(file))
-        {
-            mShouldBePainting = true;
-            processor.loadFile(file);
-        }
-    }
-    repaint();
-
-    // TBA: For each file dropped add it to an empty sampler. If there are not enough empty samplers give a popup and only add the first files in the array. 
 }
 
 void SammyAudioProcessorEditor::sliderValueChange(Slider* slider)
