@@ -10,12 +10,12 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "WaveThumbnail.h"
 
 //==============================================================================
 /**
 */
-class SammyAudioProcessorEditor : public juce::AudioProcessorEditor,
-                                    public FileDragAndDropTarget
+class SammyAudioProcessorEditor : public juce::AudioProcessorEditor
 {
 public:
     SammyAudioProcessorEditor (SammyAudioProcessor&);
@@ -25,10 +25,6 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    // File Drag and drop
-    bool isInterestedInFileDrag(const StringArray& files) override;
-    void filesDropped(const StringArray& files, int x, int y) override;
-
     void sliderValueChange(Slider* slider);
 
 private:
@@ -36,8 +32,7 @@ private:
     Slider mAttackSlider, mDecaySlider, mSustainSlider, mReleaseSlider;
     Label mAttackLabel, mDecayLabel, mSustainLabel, mReleaseLabel;
 
-    std::vector<float> mAudioPoints;
-    bool mShouldBePainting{ false };
+    WaveThumbnail mWaveThumbnail;
 
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mAttackAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mDecayAttachment;

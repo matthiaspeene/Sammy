@@ -7,6 +7,9 @@
               defines="JUCE_MODAL_LOOPS_PERMITTED=1">
   <MAINGROUP id="QdDEeq" name="Sammy">
     <GROUP id="{4E8E9E92-EAAB-B319-39DB-2FB5C38BE689}" name="Source">
+      <FILE id="jnpuFP" name="WaveThumbnail.cpp" compile="1" resource="0"
+            file="Source/WaveThumbnail.cpp"/>
+      <FILE id="OFyIBp" name="WaveThumbnail.h" compile="0" resource="0" file="Source/WaveThumbnail.h"/>
       <FILE id="AMlnzX" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="bXRGin" name="PluginProcessor.h" compile="0" resource="0"
