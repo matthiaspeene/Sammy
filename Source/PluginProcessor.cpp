@@ -195,6 +195,8 @@ void SammyAudioProcessor::loadFile()
     range.setRange(0, 128, true);
 
     mSampler.addSound(new SamplerSound("Sample", *mFormatReader, range, 60, 0.1, 0.1, 120.0));
+
+    updateADSR();
 }
 
 void SammyAudioProcessor::loadFile(const String& path)
