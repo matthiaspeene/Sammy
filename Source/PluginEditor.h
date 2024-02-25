@@ -14,7 +14,9 @@
 //==============================================================================
 /**
 */
-class SammyAudioProcessorEditor : public juce::AudioProcessorEditor, public FileDragAndDropTarget
+class SammyAudioProcessorEditor : public juce::AudioProcessorEditor,
+                                    public FileDragAndDropTarget,
+                                    public Slider::Listener
 {
 public:
     SammyAudioProcessorEditor (SammyAudioProcessor&);
@@ -30,6 +32,11 @@ public:
 
 private:
     TextButton mLoadButton{ "Load" };
+    Slider mAttackSlider, mDecaySlider, mSustainSlider, mReleaseSlider;
+    Label mAttackLabel, mDecayLabel, mSustainLabel, mReleaseLabel;
+
+    std::vector<float> mAudioPoints;
+    bool mShouldBePainting{ false };
 
     //Reference to the plugin proccesor so we can link parameters and such. 
     SammyAudioProcessor& processor;

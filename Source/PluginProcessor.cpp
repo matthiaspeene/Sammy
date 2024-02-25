@@ -198,6 +198,22 @@ void SammyAudioProcessor::loadFile(const String& path)
 
     mFormatReader = mFormatManager.createReaderFor(file);
 
+    // Gets the waveform
+    auto sampleLenght = static_cast<int>(mFormatReader->lengthInSamples);
+
+    mWaveForm.setSize(1, sampleLenght);
+    mFormatReader->read(&mWaveForm, 0, sampleLenght, 0, true, false);
+
+    auto buffer = mWaveForm.getReadPointer(0);
+
+    //Reads out sample buffer(waveform)
+    /* 
+    for (int sample = 0; sample < mWaveForm.getNumSamples(); ++sample)
+    {
+        DBG(buffer[sample]);
+    }
+    */ 
+
     BigInteger range;
     range.setRange(0, 128, true);
 
