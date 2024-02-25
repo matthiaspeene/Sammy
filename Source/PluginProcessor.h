@@ -13,7 +13,8 @@
 //==============================================================================
 /**
 */
-class SammyAudioProcessor  : public juce::AudioProcessor
+class SammyAudioProcessor  : public juce::AudioProcessor,
+                             public juce::ValueTree::Listener
 {
 public:
     //==============================================================================
@@ -57,18 +58,31 @@ public:
     void loadFile(const String& path);
 
     int getNumSamlerSounds() { return mSampler.getNumSounds(); }
+
     AudioBuffer<float>& getWaveForm() { return mWaveForm; }
-    
+
+    AudioProcessorValueTreeState& getAPVTS() { return mAPVTS; }
+
+    ADSR::Parameters& getADSRParams() { return mADSRParams; }
+
+    void updateADSR();
 
 private:
     Synthesiser mSampler;
     const int mNumVoices{16};
     AudioBuffer<float> mWaveForm;
 
+    ADSR::Parameters mADSRParams;
+
     AudioFormatManager mFormatManager;
     AudioFormatReader* mFormatReader{ nullptr };
 
-    
+    AudioProcessorValueTreeState mAPVTS;
+    AudioProcessorValueTreeState::ParameterLayout createParameters();
+
+    void valueTreePropertyChanged(ValueTree& treeWhoseProperyhasChanged, const Identifier& propery);
+
+    std::atomic<bool> mShouldUpdate{ false };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SammyAudioProcessor)

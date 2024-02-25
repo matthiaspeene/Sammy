@@ -12,18 +12,19 @@
 //==============================================================================
 SammyAudioProcessor::SammyAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+                : AudioProcessor(BusesProperties()
+            #if ! JucePlugin_IsMidiEffect
+            #if ! JucePlugin_IsSynth
+                    .withInput("Input", juce::AudioChannelSet::stereo(), true)
+            #endif
+                    .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+            #endif
+    ),
+    mAPVTS(*this, nullptr, "PARAMETERS", createParameters())
 #endif
 {
     mFormatManager.registerBasicFormats();
-
+    mAPVTS.state.addListener(this);
 
     for (int i = 0; i < mNumVoices; i++)
     {
@@ -102,6 +103,8 @@ void SammyAudioProcessor::changeProgramName (int index, const juce::String& newN
 void SammyAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     mSampler.setCurrentPlaybackSampleRate(sampleRate);
+
+    updateADSR();
 }
 
 void SammyAudioProcessor::releaseResources()
@@ -145,6 +148,10 @@ void SammyAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    if (mShouldUpdate)
+    {
+        updateADSR();
+    }
     mSampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
@@ -219,6 +226,41 @@ void SammyAudioProcessor::loadFile(const String& path)
 
     mSampler.addSound(new SamplerSound("Sample", *mFormatReader, range, 60, 0.1, 0.1, 120.0));
 }
+
+void SammyAudioProcessor::updateADSR()
+{
+    mADSRParams.attack = mAPVTS.getRawParameterValue("ATTACK")->load();
+    mADSRParams.decay = mAPVTS.getRawParameterValue("DECAY")->load();
+    mADSRParams.sustain = mAPVTS.getRawParameterValue("SUSTAIN")->load();
+    mADSRParams.release = mAPVTS.getRawParameterValue("RELEASE")->load();
+
+    for (int i = 0; i < mSampler.getNumSounds(); ++i)
+    {
+        if (auto sound = dynamic_cast<SamplerSound*>(mSampler.getSound(i).get())) // This checks if the SynthesiserClass that were getting has a sampler sound and not a SynthesiserSound becouse synth has no adsr within.
+        {
+            sound->setEnvelopeParameters(mADSRParams);
+        }
+    }
+}
+
+AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParameters()
+{
+    std::vector<std::unique_ptr<RangedAudioParameter>> parameters;
+
+    // To Do: Check out the AudioParameterFloat and see if the other constructor will be aplicable
+    parameters.push_back(std::make_unique<AudioParameterFloat>("ATTACK", "Attack", 0.0f, 20.0f, 0.012f));
+    parameters.push_back(std::make_unique<AudioParameterFloat>("DECAY", "Decay", 0.0f, 12.0f, 1.5f));
+    parameters.push_back(std::make_unique<AudioParameterFloat>("SUSTAIN", "Sustain", 0.0f, 1.0f, 1.0f));
+    parameters.push_back(std::make_unique<AudioParameterFloat>("RELEASE", "Release", 0.0f, 20.0f, 0.012f));
+
+    return { parameters.begin(), parameters.end() };
+}
+
+void SammyAudioProcessor::valueTreePropertyChanged(ValueTree& treeWhoseProperyhasChanged, const Identifier& propery)
+{
+    mShouldUpdate = true;
+}
+
 
 //==============================================================================
 // This creates new instances of the plugin..
