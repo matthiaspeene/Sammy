@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "WaveThumbnail.h"
+#include "ADSRComponent.h"
 
 //==============================================================================
 /**
@@ -25,19 +26,10 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    void sliderValueChange(Slider* slider);
-
 private:
-    TextButton mLoadButton{ "Load" };
-    Slider mAttackSlider, mDecaySlider, mSustainSlider, mReleaseSlider;
-    Label mAttackLabel, mDecayLabel, mSustainLabel, mReleaseLabel;
-
     WaveThumbnail mWaveThumbnail;
+    ADSRComponent mADSR;
 
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mAttackAttachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mDecayAttachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mSustainAttachment;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mReleaseAttachment;
 
     SammyAudioProcessor& processor;
 
