@@ -152,6 +152,32 @@ void SammyAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     {
         updateADSR();
     }
+
+    MidiMessage m;
+
+    MidiBuffer::Iterator it{ midiMessages };
+    int sample;
+
+    while (it.getNextEvent (m, sample))
+    {
+        if (m.isNoteOn())
+        {
+            mIsNotePlaying = true;
+            // Note is on but what note and how many? Check if I can get data on this and add visualization for each note.
+
+
+
+        }
+        else if (m.isNoteOff())
+        {
+            mIsNotePlaying = false;
+            // Stop playhead
+        }
+    }
+
+    mSampleCount = mIsNotePlaying ? mSampleCount += buffer.getNumSamples() : 0;
+
+
     mSampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 

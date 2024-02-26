@@ -16,11 +16,14 @@ SammyAudioProcessorEditor::SammyAudioProcessorEditor (SammyAudioProcessor& p)
     addAndMakeVisible(mWaveThumbnail);
     addAndMakeVisible(mADSR);
 
+    startTimerHz(30);
+
     setSize (800, 300);
 }
 
 SammyAudioProcessorEditor::~SammyAudioProcessorEditor()
 {
+    stopTimer();
 }
 
 //==============================================================================
@@ -34,6 +37,11 @@ void SammyAudioProcessorEditor::resized()
 {
     mWaveThumbnail.setBoundsRelative(0.0f, 0.25f, 1.0f, 0.5f);
     mADSR.setBounds(200.0f, 200.0f, 200.0f, 100.0f);
+}
+
+void SammyAudioProcessorEditor::timerCallback()
+{
+    repaint();
 }
 
 
