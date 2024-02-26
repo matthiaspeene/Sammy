@@ -46,7 +46,7 @@ void WaveThumbnail::paint (juce::Graphics& g)
         // scale y
         for (int sample = 0; sample < mAudioPoints.size(); ++sample)
         {
-            auto point = jmap<float>(mAudioPoints[sample], -1.0f, 1.0f, 200.0f, 0.0f);
+            auto point = jmap<float>(mAudioPoints[sample], -1.0f, 1.0f, getHeight(), 0.0f);
 
             // Draw the line
             p.lineTo(sample, point);
