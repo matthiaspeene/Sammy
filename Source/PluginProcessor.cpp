@@ -8,6 +8,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "CustomSamplerVoice.h"
+#include "CustomSamplerSound.h"
 
 //==============================================================================
 SammyAudioProcessor::SammyAudioProcessor()
@@ -28,7 +30,7 @@ SammyAudioProcessor::SammyAudioProcessor()
 
     for (int i = 0; i < mNumVoices; i++)
     {
-        mSampler.addVoice(new SamplerVoice());
+        mSampler.addVoice(new CustomSamplerVoice());
     }
 }
 
@@ -250,7 +252,7 @@ void SammyAudioProcessor::loadFile()
             range.setRange(0, 128, true);
 
             //TBA: Replace Sampler Sound with my own Sampler with configurable start and loop functionality. 
-            mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 120.0));
+            mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 120.0));
 
             updateADSR(); // TBA: check why this is here.
         }
@@ -296,7 +298,7 @@ bool SammyAudioProcessor::loadFile(const String& path)
     // Create a SamplerSound and add it to the sampler
     BigInteger range;
     range.setRange(0, 128, true);
-    mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 120.0));
+    mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 120.0));
 
     return true;
 }
@@ -311,7 +313,7 @@ void SammyAudioProcessor::updateADSR()
 
     for (int i = 0; i < mSampler.getNumSounds(); ++i)
     {
-        if (auto sound = dynamic_cast<SamplerSound*>(mSampler.getSound(i).get())) // This checks if the SynthesiserClass that were getting has a sampler sound and not a SynthesiserSound becouse synth has no adsr within.
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(i).get())) // This checks if the SynthesiserClass that were getting has a sampler sound and not a SynthesiserSound becouse synth has no adsr within.
         {
             sound->setEnvelopeParameters(mADSRParams);
         }
