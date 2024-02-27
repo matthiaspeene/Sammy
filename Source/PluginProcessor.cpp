@@ -206,6 +206,32 @@ void SammyAudioProcessor::setStateInformation (const void* data, int sizeInBytes
     // whose contents will have been created by the getStateInformation() call.
 }
 
+juce::AudioBuffer<float> downmixToStereo(const juce::AudioBuffer<float>& inputBuffer) // This idea has not yet been implimented.
+{
+    // Ensure inputBuffer has more than 2 channels
+    jassert(inputBuffer.getNumChannels() > 2);
+
+    int numSamples = inputBuffer.getNumSamples();
+    juce::AudioBuffer<float> stereoBuffer(2, numSamples); // Create stereo buffer
+
+    // Downmix each sample by averaging all channels
+    for (int sample = 0; sample < numSamples; ++sample)
+    {
+        for (int channel = 0; channel < inputBuffer.getNumChannels(); ++channel)
+        {
+            // Add current channel's sample to corresponding stereo channel
+            stereoBuffer.getWritePointer(0)[sample] += inputBuffer.getReadPointer(channel)[sample];
+            stereoBuffer.getWritePointer(1)[sample] += inputBuffer.getReadPointer(channel)[sample];
+        }
+    }
+
+    // Normalize stereo mix by dividing by the number of channels
+    stereoBuffer.applyGain(1.0f / inputBuffer.getNumChannels());
+
+    return stereoBuffer;
+}
+
+
 void SammyAudioProcessor::loadFile()
 {
     mSampler.clearSounds();
@@ -215,45 +241,66 @@ void SammyAudioProcessor::loadFile()
     if (chooser.browseForFileToOpen())
     {
         auto file = chooser.getResult();
-        mFormatReader = mFormatManager.createReaderFor(file);
+
+        std::unique_ptr<AudioFormatReader> reader(mFormatManager.createReaderFor(file));
+
+        if (reader != nullptr && reader->numChannels <= getTotalNumOutputChannels())
+        {
+            BigInteger range;
+            range.setRange(0, 128, true);
+
+            //TBA: Replace Sampler Sound with my own Sampler with configurable start and loop functionality. 
+            mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 120.0));
+
+            updateADSR(); // TBA: check why this is here.
+        }
+        else
+        {
+            if (reader == nullptr)
+                DBG("Error: Failed to load audio file.");
+            else
+                DBG("Error: Incompatible number of channels.");
+
+            reader.reset();
+        }
     }
-    BigInteger range;
-    range.setRange(0, 128, true);
-
-    mSampler.addSound(new SamplerSound("Sample", *mFormatReader, range, 60, 0.1, 0.1, 120.0));
-
-    updateADSR();
 }
 
-void SammyAudioProcessor::loadFile(const String& path)
+
+bool SammyAudioProcessor::loadFile(const String& path)
 {
     mSampler.clearSounds();
 
     auto file = File(path);
 
-    mFormatReader = mFormatManager.createReaderFor(file);
-
-    // Gets the waveform
-    auto sampleLenght = static_cast<int>(mFormatReader->lengthInSamples);
-
-    mWaveForm.setSize(1, sampleLenght);
-    mFormatReader->read(&mWaveForm, 0, sampleLenght, 0, true, false);
-
-    auto buffer = mWaveForm.getReadPointer(0);
-
-    //Reads out sample buffer(waveform)
-    /* 
-    for (int sample = 0; sample < mWaveForm.getNumSamples(); ++sample)
+    if (!file.existsAsFile())
     {
-        DBG(buffer[sample]);
+        DBG("Error: File does not exist.");
+        return false;
     }
-    */ 
 
+    std::unique_ptr<AudioFormatReader> reader(mFormatManager.createReaderFor(file));
+
+    if (reader->numChannels > getTotalNumOutputChannels())
+    {
+        // TBA: Add a conversion from files with a higher output to stereo.
+
+        DBG("Error: Failed to load audio file or incompatible number of channels.");
+        return false;
+    }
+
+    auto sampleLength = static_cast<int>(reader->lengthInSamples);
+    mWaveForm.setSize(1, sampleLength);
+    reader->read(&mWaveForm, 0, sampleLength, 0, true, false);
+
+    // Create a SamplerSound and add it to the sampler
     BigInteger range;
     range.setRange(0, 128, true);
+    mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 120.0));
 
-    mSampler.addSound(new SamplerSound("Sample", *mFormatReader, range, 60, 0.1, 0.1, 120.0));
+    return true;
 }
+
 
 void SammyAudioProcessor::updateADSR()
 {

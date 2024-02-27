@@ -31,7 +31,7 @@ void WaveThumbnail::paint (juce::Graphics& g)
 {
     g.fillAll(bgColour);
 
-    if (mShouldBePainting)
+    if (mShouldBePainting && processor.getWaveForm().getNumSamples() > 0)
     {
         // TBA: Though the wave needs to be drawn every frame. the waveform dous not need to be updated every frame. Only update when file uploaded...
 
@@ -71,9 +71,17 @@ void WaveThumbnail::paint (juce::Graphics& g)
         g.drawLine(playHeadPosition, 0, playHeadPosition, getHeight(), 2.0f);
 
     }
+    else if (mShouldDisplayError)
+    {
+        g.setColour(modColour);
+        g.setFont(Font(48.0f));
+        g.drawText("Failed to load file", getLocalBounds(), Justification::centred);
+    }
     else
     {
-        // TBA Tell user to drag in sample. 
+        g.setColour(darkColour);
+        g.setFont(Font(48.0f));
+        g.drawText("Load or drag in audio", getLocalBounds(), Justification::centred);
     }
 
 
@@ -108,12 +116,14 @@ void WaveThumbnail::filesDropped(const StringArray& files, int x, int y)
         if (isInterestedInFileDrag(file))
         {
             mShouldBePainting = true;
-            processor.loadFile(file);
+            if (!processor.loadFile(file))
+            {
+                mShouldDisplayError = true;
+                mShouldBePainting = false;
+            }
         }
     }
     repaint();
-
-    // TBA: For each file dropped add it to an empty sampler. If there are not enough empty samplers give a popup and only add the first files in the array. 
 }
 
 void WaveThumbnail::setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator)

@@ -33,7 +33,9 @@ public:
 
 private:
     std::vector<float> mAudioPoints;
+
     bool mShouldBePainting{ false };
+    bool mShouldDisplayError{ false };
 
     Colour& bgColour;
     Colour& midColour;
