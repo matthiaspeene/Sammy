@@ -6,6 +6,24 @@
               companyName="M8T" pluginVST3Category="Sampler" pluginVSTCategory="kPlugCategSynth"
               defines="JUCE_MODAL_LOOPS_PERMITTED=1">
   <MAINGROUP id="QdDEeq" name="Sammy">
+    <GROUP id="{141D78D9-6218-3B8B-0DC2-554B49E05443}" name="UI">
+      <FILE id="uXGlfV" name="ADSRComponent.cpp" compile="1" resource="0"
+            file="Source/ADSRComponent.cpp"/>
+      <FILE id="YwO2NG" name="ADSRComponent.h" compile="0" resource="0" file="Source/ADSRComponent.h"/>
+      <FILE id="jnpuFP" name="WaveThumbnail.cpp" compile="1" resource="0"
+            file="Source/WaveThumbnail.cpp"/>
+      <FILE id="OFyIBp" name="WaveThumbnail.h" compile="0" resource="0" file="Source/WaveThumbnail.h"/>
+    </GROUP>
+    <GROUP id="{5EBB417C-DE7E-C732-E831-11581FA394F6}" name="SamplerData">
+      <FILE id="wkwWup" name="CustomSamplerSound.cpp" compile="1" resource="0"
+            file="Source/CustomSamplerSound.cpp"/>
+      <FILE id="mPE8JT" name="CustomSamplerSound.h" compile="0" resource="0"
+            file="Source/CustomSamplerSound.h"/>
+      <FILE id="CUxcWv" name="CustomSamplerVoice.cpp" compile="1" resource="0"
+            file="Source/CustomSamplerVoice.cpp"/>
+      <FILE id="lXy2fL" name="CustomSamplerVoice.h" compile="0" resource="0"
+            file="Source/CustomSamplerVoice.h"/>
+    </GROUP>
     <GROUP id="{4E8E9E92-EAAB-B319-39DB-2FB5C38BE689}" name="Source">
       <FILE id="AMlnzX" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
@@ -14,12 +32,6 @@
       <FILE id="YJGUom" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="Qfo1Og" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
-      <FILE id="uXGlfV" name="ADSRComponent.cpp" compile="1" resource="0"
-            file="Source/ADSRComponent.cpp"/>
-      <FILE id="YwO2NG" name="ADSRComponent.h" compile="0" resource="0" file="Source/ADSRComponent.h"/>
-      <FILE id="jnpuFP" name="WaveThumbnail.cpp" compile="1" resource="0"
-            file="Source/WaveThumbnail.cpp"/>
-      <FILE id="OFyIBp" name="WaveThumbnail.h" compile="0" resource="0" file="Source/WaveThumbnail.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>
