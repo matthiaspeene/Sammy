@@ -29,9 +29,17 @@ public:
     bool isInterestedInFileDrag(const StringArray& files) override;
     void filesDropped(const StringArray& files, int x, int y) override;
 
+    void setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator);
+
 private:
     std::vector<float> mAudioPoints;
     bool mShouldBePainting{ false };
+
+    Colour& bgColour;
+    Colour& midColour;
+    Colour& darkColour;
+    Colour& modColour;
+    Colour& modulatorColour;
 
     SammyAudioProcessor& processor;
 

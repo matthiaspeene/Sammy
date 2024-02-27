@@ -29,10 +29,17 @@ public:
 
     void timerCallback() override;
 
+    void setColours();
+
 private:
     WaveThumbnail mWaveThumbnail;
     ADSRComponent mADSR;
 
+    Colour& bgColour;
+    Colour& midColour;
+    Colour& darkColour;
+    Colour& modColour;
+    Colour& modulatorColour;
 
     SammyAudioProcessor& processor;
 

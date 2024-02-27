@@ -12,15 +12,28 @@
 #include "ADSRComponent.h"
 
 //==============================================================================
-ADSRComponent::ADSRComponent(SammyAudioProcessor& p) : processor(p)
+ADSRComponent::ADSRComponent(SammyAudioProcessor& p)
+    : bgColour(p.getBgColour()),
+    midColour(p.getMidColour()),
+    darkColour(p.getDarkColour()),
+    modColour(p.getModColour()),
+    modulatorColour(p.getModulatorColour()),
+    processor(p)
 {
     //Attack Slider
     mAttackSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
     mAttackSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 40, 20);
+    mAttackSlider.setColour(Slider::ColourIds::thumbColourId, modColour);
+    mAttackSlider.setColour(Slider::ColourIds::rotarySliderFillColourId, modColour);
+    mAttackSlider.setColour(Slider::ColourIds::rotarySliderOutlineColourId, midColour);
+    mAttackSlider.setColour(Slider::ColourIds::textBoxOutlineColourId, darkColour);
+    mAttackSlider.setColour(Slider::ColourIds::textBoxTextColourId, darkColour);
+    mAttackSlider.setColour(Slider::ColourIds::textBoxHighlightColourId, modColour);
     addAndMakeVisible(mAttackSlider);
 
-    mAttackLabel.setFont(10.0f);
+    mAttackLabel.setFont(12.0f);
     mAttackLabel.setText("Attack", NotificationType::dontSendNotification);
+    mAttackLabel.setColour(Label::ColourIds::textColourId, darkColour);
     mAttackLabel.setJustificationType(Justification::centredBottom);
     mAttackLabel.attachToComponent(&mAttackSlider, false);
 
@@ -29,10 +42,17 @@ ADSRComponent::ADSRComponent(SammyAudioProcessor& p) : processor(p)
     //Decay Slider
     mDecaySlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
     mDecaySlider.setTextBoxStyle(Slider::TextBoxBelow, false, 40, 20);
+    mDecaySlider.setColour(Slider::ColourIds::thumbColourId, modColour);
+    mDecaySlider.setColour(Slider::ColourIds::rotarySliderFillColourId, modColour);
+    mDecaySlider.setColour(Slider::ColourIds::rotarySliderOutlineColourId, midColour);
+    mDecaySlider.setColour(Slider::ColourIds::textBoxOutlineColourId, darkColour);
+    mDecaySlider.setColour(Slider::ColourIds::textBoxTextColourId, darkColour);
+    mDecaySlider.setColour(Slider::ColourIds::textBoxHighlightColourId, modColour);
     addAndMakeVisible(mDecaySlider);
 
-    mDecayLabel.setFont(10.0f);
+    mDecayLabel.setFont(12.0f);
     mDecayLabel.setText("Decay", NotificationType::dontSendNotification);
+    mDecayLabel.setColour(Label::ColourIds::textColourId, darkColour);
     mDecayLabel.setJustificationType(Justification::centredBottom);
     mDecayLabel.attachToComponent(&mDecaySlider, false);
 
@@ -40,11 +60,18 @@ ADSRComponent::ADSRComponent(SammyAudioProcessor& p) : processor(p)
 
     //Sustain Slider
     mSustainSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
+    mSustainSlider.setColour(Slider::ColourIds::thumbColourId, modColour);
+    mSustainSlider.setColour(Slider::ColourIds::rotarySliderFillColourId, modColour);
+    mSustainSlider.setColour(Slider::ColourIds::rotarySliderOutlineColourId, midColour);
+    mSustainSlider.setColour(Slider::ColourIds::textBoxOutlineColourId, darkColour);
+    mSustainSlider.setColour(Slider::ColourIds::textBoxTextColourId, darkColour);
+    mSustainSlider.setColour(Slider::ColourIds::textBoxHighlightColourId, modColour);
     mSustainSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 40, 20);
     addAndMakeVisible(mSustainSlider);
 
-    mSustainLabel.setFont(10.0f);
+    mSustainLabel.setFont(12.0f);
     mSustainLabel.setText("Sustain", NotificationType::dontSendNotification);
+    mSustainLabel.setColour(Label::ColourIds::textColourId, darkColour);
     mSustainLabel.setJustificationType(Justification::centredBottom);
     mSustainLabel.attachToComponent(&mSustainSlider, false);
 
@@ -53,11 +80,18 @@ ADSRComponent::ADSRComponent(SammyAudioProcessor& p) : processor(p)
 
     //Release Slider
     mReleaseSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
+    mReleaseSlider.setColour(Slider::ColourIds::thumbColourId, modColour);
+    mReleaseSlider.setColour(Slider::ColourIds::rotarySliderFillColourId, modColour);
+    mReleaseSlider.setColour(Slider::ColourIds::rotarySliderOutlineColourId, midColour);
+    mReleaseSlider.setColour(Slider::ColourIds::textBoxOutlineColourId, darkColour);
+    mReleaseSlider.setColour(Slider::ColourIds::textBoxTextColourId, darkColour);
+    mReleaseSlider.setColour(Slider::ColourIds::textBoxHighlightColourId, modColour);
     mReleaseSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 40, 20);
     addAndMakeVisible(mReleaseSlider);
 
-    mReleaseLabel.setFont(10.0f);
+    mReleaseLabel.setFont(12.0f);
     mReleaseLabel.setText("Release", NotificationType::dontSendNotification);
+    mReleaseLabel.setColour(Label::ColourIds::textColourId, darkColour);
     mReleaseLabel.setJustificationType(Justification::centredBottom);
     mReleaseLabel.attachToComponent(&mReleaseSlider, false);
 
@@ -71,7 +105,7 @@ ADSRComponent::~ADSRComponent()
 
 void ADSRComponent::paint (juce::Graphics& g)
 {
-    g.fillAll(Colours::burlywood);
+    g.fillAll(bgColour);
 }
 
 void ADSRComponent::resized()
@@ -80,7 +114,7 @@ void ADSRComponent::resized()
     const auto startX = 0.0f;
     const auto offset = 0.25f;
     const auto dialWith = 0.25f;
-    const auto dialHeight = 1.0f - startY;
+    const auto dialHeight = 1.0f - startY - 12.0f/getWidth();
 
     //mLoadButton.setBoundsRelative(getWidth()/ 2 - 50, getHeight()/2 -50, 100 , 100);
     mAttackSlider.setBoundsRelative(startX, startY, dialWith, dialHeight);
@@ -109,4 +143,13 @@ void ADSRComponent::sliderValueChange(Slider* slider)
     }
 
     processor.updateADSR();
+}
+
+void ADSRComponent::setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator)
+{
+    bgColour = bg;
+    midColour = mid;
+    darkColour = dark;
+    modColour = mod;
+    modulatorColour = modulator;
 }

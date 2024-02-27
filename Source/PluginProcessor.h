@@ -69,6 +69,11 @@ public:
     std::atomic<bool>& isNotePlaying() { return mIsNotePlaying; }
     std::atomic<int>& getSampleCount() { return  mSampleCount; }
 
+    Colour& getBgColour() { return bgColour; }
+    Colour& getMidColour() { return midColour; }
+    Colour& getDarkColour() { return darkColour; }
+    Colour& getModColour() { return modColour; }
+    Colour& getModulatorColour() { return modulatorColour; }
 
 private:
     Synthesiser mSampler;
@@ -88,6 +93,12 @@ private:
     std::atomic<bool> mShouldUpdate{ false };
     std::atomic<bool> mIsNotePlaying{ false };
     std::atomic<int> mSampleCount{ 0 };
+
+    Colour bgColour{ 245, 252, 255 };
+    Colour midColour{ 192, 234, 255 };
+    Colour darkColour{ 146, 206, 236 };
+    Colour modColour{ 255, 158, 158 };
+    Colour modulatorColour{ 195, 255, 177 };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SammyAudioProcessor)

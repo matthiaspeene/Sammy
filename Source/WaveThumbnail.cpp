@@ -12,9 +12,15 @@
 #include "WaveThumbnail.h"
 
 //==============================================================================
-WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p) : processor (p)
+WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
+    : bgColour(p.getBgColour()),
+    midColour(p.getMidColour()),
+    darkColour(p.getDarkColour()),
+    modColour(p.getModColour()),
+    modulatorColour(p.getModulatorColour()),
+    processor(p)
 {
-
+    
 }
 
 WaveThumbnail::~WaveThumbnail()
@@ -23,7 +29,7 @@ WaveThumbnail::~WaveThumbnail()
 
 void WaveThumbnail::paint (juce::Graphics& g)
 {
-    g.fillAll(Colours::cadetblue.brighter());
+    g.fillAll(bgColour);
 
     if (mShouldBePainting)
     {
@@ -45,6 +51,7 @@ void WaveThumbnail::paint (juce::Graphics& g)
         // Start the path
         p.startNewSubPath(0, getHeight() / 2);
 
+        g.setColour(darkColour);
         // scale y
         for (int sample = 0; sample < mAudioPoints.size(); ++sample)
         {
@@ -56,9 +63,11 @@ void WaveThumbnail::paint (juce::Graphics& g)
 
         g.strokePath(p, PathStrokeType(2));
 
+        // TBA:: Get the samples played relative to playback speed. Also iterate trough all midi notes and have one play for each note. 
+
         auto playHeadPosition = jmap<int>(processor.getSampleCount(), 0, processor.getWaveForm().getNumSamples(), 0, getWidth());
 
-        g.setColour(Colours::white);
+        g.setColour(modulatorColour);
         g.drawLine(playHeadPosition, 0, playHeadPosition, getHeight(), 2.0f);
 
     }
@@ -105,4 +114,13 @@ void WaveThumbnail::filesDropped(const StringArray& files, int x, int y)
     repaint();
 
     // TBA: For each file dropped add it to an empty sampler. If there are not enough empty samplers give a popup and only add the first files in the array. 
+}
+
+void WaveThumbnail::setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator)
+{
+    bgColour = bg;
+    midColour = mid;
+    darkColour = dark;
+    modColour = mod;
+    modulatorColour = modulator;
 }

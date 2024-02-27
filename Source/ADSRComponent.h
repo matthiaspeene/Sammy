@@ -27,6 +27,8 @@ public:
 
     void sliderValueChange(Slider* slider);
 
+    void setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator);
+
 private:
     Slider mAttackSlider, mDecaySlider, mSustainSlider, mReleaseSlider;
     Label mAttackLabel, mDecayLabel, mSustainLabel, mReleaseLabel;
@@ -35,6 +37,12 @@ private:
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mDecayAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mSustainAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mReleaseAttachment;
+
+    Colour& bgColour;
+    Colour& midColour;
+    Colour& darkColour;
+    Colour& modColour;
+    Colour& modulatorColour;
 
     SammyAudioProcessor& processor;
 
