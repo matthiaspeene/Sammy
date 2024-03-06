@@ -29,6 +29,8 @@ public:
     bool isInterestedInFileDrag(const StringArray& files) override;
     void filesDropped(const StringArray& files, int x, int y) override;
 
+    //void sliderValueChange(Slider* slider);
+
     void setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator);
 
 private:
@@ -36,6 +38,9 @@ private:
 
     bool mShouldBePainting{ false };
     bool mShouldDisplayError{ false };
+
+    Slider mStartPosSlider;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mStartPosAttachment;
 
     Colour& bgColour;
     Colour& midColour;

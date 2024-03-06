@@ -26,7 +26,7 @@ void CustomSamplerVoice::startNote(int midiNoteNumber, float velocity, Synthesis
         pitchRatio = std::pow(2.0, (midiNoteNumber - sound->midiRootNote) / 12.0)
             * sound->sourceSampleRate / getSampleRate();
 
-        sourceSamplePosition = 0.0;
+        sourceSamplePosition = sound->length / 100 * sound->startPos;
         lgain = velocity;
         rgain = velocity;
 
@@ -105,5 +105,6 @@ void CustomSamplerVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int s
         }
     }
 }
+
 
 

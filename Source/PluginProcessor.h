@@ -64,7 +64,9 @@ public:
     AudioProcessorValueTreeState& getAPVTS() { return mAPVTS; }
 
     void updateADSR();
+    void updateStartPos();
     ADSR::Parameters& getADSRParams() { return mADSRParams; }
+    float& getStartPos() { return mStartPos; }
 
     std::atomic<bool>& isNotePlaying() { return mIsNotePlaying; }
     std::atomic<int>& getSampleCount() { return  mSampleCount; }
@@ -81,6 +83,7 @@ private:
     AudioBuffer<float> mWaveForm;
 
     ADSR::Parameters mADSRParams;
+    float mStartPos{ 0 };
 
     AudioFormatManager mFormatManager;
     AudioFormatReader* mFormatReader{ nullptr };
@@ -90,7 +93,8 @@ private:
 
     void valueTreePropertyChanged(ValueTree& treeWhoseProperyhasChanged, const Identifier& propery);
 
-    std::atomic<bool> mShouldUpdate{ false };
+    std::atomic<bool> mADSRShouldUpdate{ false };
+    std::atomic<bool> mStartPosShouldUpdate{ false };
     std::atomic<bool> mIsNotePlaying{ false };
     std::atomic<int> mSampleCount{ 0 };
 

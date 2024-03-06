@@ -20,11 +20,20 @@ WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
     modulatorColour(p.getModulatorColour()),
     processor(p)
 {
-    
+    mStartPosSlider.setSliderStyle(Slider::SliderStyle::LinearBar);
+    mStartPosSlider.setTextBoxStyle(Slider::NoTextBox, false, 0, 0);
+    mStartPosSlider.setRange(0.f, 1.f, 0.001f);
+    mStartPosSlider.setColour(Slider::ColourIds::trackColourId, midColour);
+    mStartPosSlider.setAlpha(0.5f);
+    addAndMakeVisible(mStartPosSlider);
+
+    mStartPosAttachment = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "START", mStartPosSlider);
+    mStartPosSlider.setValue(0.);
 }
 
 WaveThumbnail::~WaveThumbnail()
 {
+
 }
 
 void WaveThumbnail::paint (juce::Graphics& g)
@@ -34,6 +43,8 @@ void WaveThumbnail::paint (juce::Graphics& g)
     if (mShouldBePainting && processor.getWaveForm().getNumSamples() > 0)
     {
         // TBA: Though the wave needs to be drawn every frame. the waveform dous not need to be updated every frame. Only update when file uploaded...
+        mStartPosSlider.setEnabled(true);
+        mStartPosSlider.setAlpha(0.5f);
 
         Path p;
         mAudioPoints.clear();
@@ -51,47 +62,56 @@ void WaveThumbnail::paint (juce::Graphics& g)
         // Start the path
         p.startNewSubPath(0, getHeight() / 2);
 
-        g.setColour(darkColour);
         // scale y
         for (int sample = 0; sample < mAudioPoints.size(); ++sample)
         {
             auto point = jmap<float>(mAudioPoints[sample], -1.0f, 1.0f, getHeight(), 0.0f);
 
-            // Draw the line
             p.lineTo(sample, point);
         }
 
+        g.setColour(midColour);
+        g.fillPath(p);
+        g.setColour(darkColour);
         g.strokePath(p, PathStrokeType(2));
 
-        // TBA:: Get the samples played relative to playback speed. Also iterate trough all midi notes and have one play for each note. 
 
-        auto playHeadPosition = jmap<int>(processor.getSampleCount(), 0, processor.getWaveForm().getNumSamples(), 0, getWidth());
+        // TBA:: Get the samples played relative to playback speed. Also iterate trough all midi notes and have one play for each note. 
+        auto startSliderPos = mStartPosSlider.getValue() / 100 * getWidth();
+        
+        auto playHeadPosition = jmap<int>(processor.getSampleCount(), 0, processor.getWaveForm().getNumSamples(), startSliderPos, getWidth());
+
 
         g.setColour(modulatorColour);
         g.drawLine(playHeadPosition, 0, playHeadPosition, getHeight(), 2.0f);
 
+        g.setColour(modColour);
+        g.drawLine(startSliderPos, 0, startSliderPos, getHeight(), 2.0f);
+
+        g.fillRect(startSliderPos, 0.f, 100.f, 30.f);
+
     }
     else if (mShouldDisplayError)
     {
+        mStartPosSlider.setAlpha(0.0f);
+        mStartPosSlider.setEnabled(false);
         g.setColour(modColour);
         g.setFont(Font(48.0f));
         g.drawText("Failed to load file", getLocalBounds(), Justification::centred);
     }
     else
     {
+        mStartPosSlider.setAlpha(0.0f);
+        mStartPosSlider.setEnabled(false);
         g.setColour(darkColour);
         g.setFont(Font(48.0f));
         g.drawText("Load or drag in audio", getLocalBounds(), Justification::centred);
     }
-
-
 }
 
 void WaveThumbnail::resized()
 {
-    // This method is where you should set the bounds of any child
-    // components that your component contains..
-
+    mStartPosSlider.setBoundsRelative(0.f, 0.f, 1.f, 1.f);
 }
 
 bool WaveThumbnail::isInterestedInFileDrag(const StringArray& files)
@@ -123,8 +143,24 @@ void WaveThumbnail::filesDropped(const StringArray& files, int x, int y)
             }
         }
     }
+    mStartPosSlider.valueChanged();
+    processor.updateStartPos();
     repaint();
 }
+
+//Slider Value Change
+/*
+void WaveThumbnail::sliderValueChange(Slider* slider)
+{
+    if (slider == &mStartPosSlider)
+    {
+        processor.getStartPos() = mStartPosSlider.getValue();
+
+        DBG("Slider = " + std::to_string(mStartPosSlider.getValue()));
+    }
+    processor.updateStartPos();
+}
+*/
 
 void WaveThumbnail::setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator)
 {

@@ -19,22 +19,23 @@
   <FILTER uid="7" x="0.36" y="0.6532258064516129" useARA="0">
     <PLUGIN name="Audio Output" descriptiveName="" format="Internal" category="I/O devices"
             manufacturer="JUCE" version="1.0" file="" uniqueId="724248cb"
-            isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="1"
+            isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="2"
             numOutputs="0" isShell="0" hasARAExtension="0" uid="724248cb"/>
     <STATE>0.</STATE>
     <LAYOUT>
       <INPUTS>
-        <BUS index="0" layout="L R"/>
+        <BUS index="0" layout="L R C Lfe Ls Rs"/>
       </INPUTS>
       <OUTPUTS>
         <BUS index="0" layout="disabled"/>
       </OUTPUTS>
     </LAYOUT>
   </FILTER>
-  <FILTER uid="8" x="0.35875" y="0.4254032258064516" useARA="0">
+  <FILTER uid="8" x="0.35875" y="0.4254032258064516" useARA="0" uiLastX_Normal="310"
+          uiLastY_Normal="343" uiopen_Normal="1">
     <PLUGIN name="Sammy" format="VST3" category="Instrument|Sampler" manufacturer="M8T"
             version="1.0.0" file="C:\Program Files\Common Files\VST3\Sammy.vst3\Contents\x86_64-win\Sammy.vst3"
-            uniqueId="f597dd2d" isInstrument="1" fileTime="18dcd754b88" infoUpdateTime="18dcd87b20c"
+            uniqueId="f597dd2d" isInstrument="1" fileTime="18e0de25e17" infoUpdateTime="18e0de2f26a"
             numInputs="0" numOutputs="2" isShell="0" hasARAExtension="0"
             uid="e954b4cd"/>
     <STATE>191.VMjLgXK....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9XCLt3hKt3hKt3hKt3hYRUUSTEETIckVwTjQisVTTgkdEYjKAQjYPQSPWgUdMcjKAQjct3hdA4hKt3hKt3hKtnTUv.UQAslXuk0UXoWUFE0YQcEV77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>

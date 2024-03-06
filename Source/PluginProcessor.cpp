@@ -150,9 +150,16 @@ void SammyAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    if (mShouldUpdate)
+    if (mADSRShouldUpdate)
     {
         updateADSR();
+        mADSRShouldUpdate = false;
+    }
+
+    if (mStartPosShouldUpdate)
+    {
+        updateStartPos();
+        mStartPosShouldUpdate = false;
     }
 
     MidiMessage m;
@@ -252,9 +259,10 @@ void SammyAudioProcessor::loadFile()
             range.setRange(0, 128, true);
 
             //TBA: Replace Sampler Sound with my own Sampler with configurable start and loop functionality. 
-            mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 120.0));
+            mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, mADSRParams.attack, mADSRParams.release, 120.0));
 
-            updateADSR(); // TBA: check why this is here.
+            updateADSR();
+            updateStartPos();
         }
         else
         {
@@ -298,7 +306,7 @@ bool SammyAudioProcessor::loadFile(const String& path)
     // Create a SamplerSound and add it to the sampler
     BigInteger range;
     range.setRange(0, 128, true);
-    mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 120.0));
+    mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, mADSRParams.attack, mADSRParams.release, 120.0));
 
     return true;
 }
@@ -320,6 +328,20 @@ void SammyAudioProcessor::updateADSR()
     }
 }
 
+void SammyAudioProcessor::updateStartPos()
+{
+    mStartPos = mAPVTS.getRawParameterValue("START")->load();
+
+    for (int i = 0; i < mSampler.getNumSounds(); ++i)
+    {
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(i).get())) // This checks if the SynthesiserClass that were getting has a sampler sound and not a SynthesiserSound becouse synth has no adsr within.
+        {
+            sound->setStartPos(mStartPos);
+            DBG("Update Start Pos = " + std::to_string(mStartPos));
+        }
+    }
+}
+
 AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParameters()
 {
     std::vector<std::unique_ptr<RangedAudioParameter>> parameters;
@@ -329,13 +351,15 @@ AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParamet
     parameters.push_back(std::make_unique<AudioParameterFloat>("DECAY", "Decay", 0.0f, 12.0f, 1.5f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("SUSTAIN", "Sustain", 0.0f, 1.0f, 1.0f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("RELEASE", "Release", 0.0f, 20.0f, 0.012f));
+    parameters.push_back(std::make_unique<AudioParameterFloat>("START", "Start Position", 0, 100, 0));
 
     return { parameters.begin(), parameters.end() };
 }
 
 void SammyAudioProcessor::valueTreePropertyChanged(ValueTree& treeWhoseProperyhasChanged, const Identifier& propery)
 {
-    mShouldUpdate = true;
+    mADSRShouldUpdate = true;
+    mStartPosShouldUpdate = true;
 }
 
 

@@ -27,6 +27,7 @@ public:
 
     void sliderValueChange(Slider* slider);
 
+
     void setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator);
 
 private:
