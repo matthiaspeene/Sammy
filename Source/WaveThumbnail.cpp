@@ -18,6 +18,7 @@ WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
     darkColour(p.getDarkColour()),
     modColour(p.getModColour()),
     modulatorColour(p.getModulatorColour()),
+    waveform(p.getWaveForm()),
     processor(p)
 {
     mStartPosSlider.setSliderStyle(Slider::SliderStyle::LinearBar);
@@ -25,10 +26,19 @@ WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
     mStartPosSlider.setRange(0.f, 1.f, 0.001f);
     mStartPosSlider.setColour(Slider::ColourIds::trackColourId, midColour);
     mStartPosSlider.setAlpha(0.5f);
+    mStartPosSlider.setScrollWheelEnabled(false);
     addAndMakeVisible(mStartPosSlider);
 
     mStartPosAttachment = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "START", mStartPosSlider);
     mStartPosSlider.setValue(0.);
+
+    mZoomSlider.setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
+    mZoomSlider.setTextBoxStyle(Slider::NoTextBox, false, 0, 0);
+    mZoomSlider.setRange(0.f, 1.f, 0.001f);
+    mZoomSlider.setMaxValue(1.0f);
+    mZoomSlider.setColour(Slider::ColourIds::trackColourId, midColour);
+    mZoomSlider.addListener()
+    addAndMakeVisible(mZoomSlider);
 }
 
 WaveThumbnail::~WaveThumbnail()
@@ -46,34 +56,13 @@ void WaveThumbnail::paint (juce::Graphics& g)
         mStartPosSlider.setEnabled(true);
         mStartPosSlider.setAlpha(0.5f);
 
-        Path p;
-        mAudioPoints.clear();
+        mZoomSlider.setEnabled(true);
 
-        auto waveForm = processor.getWaveForm();
-        auto ratio = waveForm.getNumSamples() / getWidth();
-        auto buffer = waveForm.getReadPointer(0);
-
-        //scale x
-        for (int sample = 0; sample < waveForm.getNumSamples(); sample += ratio)
-        {
-            mAudioPoints.push_back(buffer[sample]);
-        }
-
-        // Start the path
-        p.startNewSubPath(0, getHeight() / 2);
-
-        // scale y
-        for (int sample = 0; sample < mAudioPoints.size(); ++sample)
-        {
-            auto point = jmap<float>(mAudioPoints[sample], -1.0f, 1.0f, getHeight(), 0.0f);
-
-            p.lineTo(sample, point);
-        }
 
         g.setColour(midColour);
-        g.fillPath(p);
+        g.fillPath(wavePath);
         g.setColour(darkColour);
-        g.strokePath(p, PathStrokeType(2));
+        g.strokePath(wavePath, PathStrokeType(2));
 
 
         // TBA:: Get the samples played relative to playback speed. Also iterate trough all midi notes and have one play for each note. 
@@ -89,7 +78,6 @@ void WaveThumbnail::paint (juce::Graphics& g)
         g.drawLine(startSliderPos, 0, startSliderPos, getHeight(), 2.0f);
 
         g.fillRect(startSliderPos, 0.f, 100.f, 30.f);
-
     }
     else if (mShouldDisplayError)
     {
@@ -112,6 +100,7 @@ void WaveThumbnail::paint (juce::Graphics& g)
 void WaveThumbnail::resized()
 {
     mStartPosSlider.setBoundsRelative(0.f, 0.f, 1.f, 1.f);
+    mZoomSlider.setBoundsRelative(0.f, 0.f, 1.f, 0.1f);
 }
 
 bool WaveThumbnail::isInterestedInFileDrag(const StringArray& files)
@@ -145,8 +134,71 @@ void WaveThumbnail::filesDropped(const StringArray& files, int x, int y)
     }
     mStartPosSlider.valueChanged();
     processor.updateStartPos();
+    updateWaveForm();
     repaint();
 }
+
+void WaveThumbnail::updateWaveForm()
+{
+    Path p;
+    mAudioPoints.clear();
+
+    const double leftSamplePos = mZoomSlider.getMinValue();
+    const double rightSamplePos = mZoomSlider.getMaxValue();
+    const int width = getWidth();
+
+    const int numSamples = waveform.getNumSamples();
+
+    const double ratio = numSamples / static_cast<double>(width) * (rightSamplePos - leftSamplePos);
+
+    const float* buffer = waveform.getReadPointer(0);
+
+    // Calculate the number of samples to average around each position
+    const int samplesToAverage = ratio/2;
+
+    // Populate mAudioPoints with average values
+    for (double sample = numSamples * leftSamplePos; sample < numSamples * rightSamplePos; sample += ratio) {
+        if (sample >= 0 && sample < numSamples) {
+            float sum = 0.0f;
+            int count = 0;
+            // Calculate the average value within a range around the current sample position
+            for (int i = -samplesToAverage / 2; i <= samplesToAverage / 2; ++i) {
+                int index = static_cast<int>(sample) + i;
+                if (index >= 0 && index < numSamples) {
+                    sum += buffer[index];
+                    count++;
+                }
+            }
+            if (count > 0) {
+                float average = sum / count;
+                mAudioPoints.push_back(average);
+            }
+        }
+    }
+
+    // Find the maximum absolute value of the samples within the visible range
+    float maxSample = 0.0f;
+    for (int i = 0; i < mAudioPoints.size(); ++i) {
+        float absSample = std::abs(mAudioPoints[i]);
+        if (absSample > maxSample) {
+            maxSample = absSample;
+        }
+    }
+
+    // Start the path
+    p.startNewSubPath(0, getHeight() / 2);
+
+    // Scale y based on the maximum absolute value
+    for (int sample = 0; sample < mAudioPoints.size(); ++sample)
+    {
+        auto point = jmap<float>(mAudioPoints[sample], -maxSample, maxSample, getHeight(), 0.0f);
+
+        p.lineTo(sample, point);
+    }
+    wavePath = p;
+}
+
+
 
 //Slider Value Change
 /*

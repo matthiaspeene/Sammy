@@ -321,7 +321,7 @@ void SammyAudioProcessor::updateADSR()
 
     for (int i = 0; i < mSampler.getNumSounds(); ++i)
     {
-        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(i).get())) // This checks if the SynthesiserClass that were getting has a sampler sound and not a SynthesiserSound becouse synth has no adsr within.
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(i).get()))
         {
             sound->setEnvelopeParameters(mADSRParams);
         }
@@ -334,10 +334,9 @@ void SammyAudioProcessor::updateStartPos()
 
     for (int i = 0; i < mSampler.getNumSounds(); ++i)
     {
-        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(i).get())) // This checks if the SynthesiserClass that were getting has a sampler sound and not a SynthesiserSound becouse synth has no adsr within.
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(i).get()))
         {
             sound->setStartPos(mStartPos);
-            DBG("Update Start Pos = " + std::to_string(mStartPos));
         }
     }
 }

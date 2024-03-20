@@ -74,8 +74,6 @@ private:
     int length = 0, midiRootNote = 0;
     int startPos;
 
-
-
     ADSR::Parameters params;
 
     JUCE_LEAK_DETECTOR(CustomSamplerSound)
