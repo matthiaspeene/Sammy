@@ -341,6 +341,21 @@ void SammyAudioProcessor::updateStartPos()
     }
 }
 
+void SammyAudioProcessor::updateStartRandom()
+{
+    mStartRandom = mAPVTS.getRawParameterValue("RANDOM START")->load();
+
+    for (int i = 0; i < mSampler.getNumSounds(); ++i)
+    {
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(i).get()))
+        {
+            sound->setStartRandom(mStartRandom);
+        }
+    }
+}
+
+
+
 AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParameters()
 {
     std::vector<std::unique_ptr<RangedAudioParameter>> parameters;
@@ -350,7 +365,8 @@ AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParamet
     parameters.push_back(std::make_unique<AudioParameterFloat>("DECAY", "Decay", 0.0f, 12.0f, 1.5f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("SUSTAIN", "Sustain", 0.0f, 1.0f, 1.0f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("RELEASE", "Release", 0.0f, 20.0f, 0.012f));
-    parameters.push_back(std::make_unique<AudioParameterFloat>("START", "Start Position", 0, 100, 0));
+    parameters.push_back(std::make_unique<AudioParameterFloat>("START", "Start Position", 0.f, 100.f, 0.f));
+    parameters.push_back(std::make_unique<AudioParameterFloat>("RANDOM START", "Start Position Randomization", 0.f, 100.f, 0.f));
 
     return { parameters.begin(), parameters.end() };
 }

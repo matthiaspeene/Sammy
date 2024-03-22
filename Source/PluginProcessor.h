@@ -65,6 +65,7 @@ public:
 
     void updateADSR();
     void updateStartPos();
+    void updateStartRandom();
     ADSR::Parameters& getADSRParams() { return mADSRParams; }
     float& getStartPos() { return mStartPos; }
 
@@ -84,6 +85,7 @@ private:
 
     ADSR::Parameters mADSRParams;
     float mStartPos{ 0 };
+    float mStartRandom{ 0 };
 
     AudioFormatManager mFormatManager;
     AudioFormatReader* mFormatReader{ nullptr };

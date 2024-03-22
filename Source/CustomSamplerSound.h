@@ -58,6 +58,7 @@ public:
     /** Changes the parameters of the ADSR envelope which will be applied to the sample. */
     void setEnvelopeParameters(ADSR::Parameters parametersToUse) { params = parametersToUse; }
     void setStartPos(int startPosistion) { startPos = startPosistion; }
+    void setStartRandom(float startRandom) { startRand = startRandom; }
 
     //==============================================================================
     bool appliesToNote(int midiNoteNumber) override;
@@ -73,6 +74,7 @@ private:
     BigInteger midiNotes;
     int length = 0, midiRootNote = 0;
     int startPos;
+    float startRand;
 
     ADSR::Parameters params;
 

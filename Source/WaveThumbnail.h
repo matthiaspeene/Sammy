@@ -31,8 +31,6 @@ public:
 
     void updateWaveForm();
 
-    //void sliderValueChange(Slider* slider);
-
     void setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator);
 
 private:
@@ -43,6 +41,9 @@ private:
 
     Slider mStartPosSlider;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mStartPosAttachment;
+
+    Slider mRandomStartSlider;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mRandomStartAttachment;
 
     Slider mZoomSlider;
 
