@@ -77,8 +77,6 @@ void WaveThumbnail::paint (juce::Graphics& g)
 
         // TBA:: Get the samples played relative to playback speed. Also iterate trough all midi notes and have one play for each note. 
         auto playHeadPosition = jmap<int>(processor.getSampleCount(), 0, processor.getWaveForm().getNumSamples(), startSliderPos, getWidth());
-
-        DBG(startSliderPos);
         
         if (startSliderPos >= 0.f && startSliderPos <= getWidth())
         {
@@ -92,7 +90,9 @@ void WaveThumbnail::paint (juce::Graphics& g)
             g.setColour(modColour);
             g.drawLine(startSliderPos, 0, startSliderPos, getHeight(), 2.0f);
 
-            g.fillRect(startSliderPos, 0.f, 100.f, 30.f);
+            auto mStartRandomLenght = (getWidth() - startSliderPos) * mRandomStartSlider.getValue() / 100;
+
+            g.fillRect(startSliderPos, 0.f, mStartRandomLenght, 30.f);
         }
 
         mZoomSlider.setEnabled(true);
@@ -124,8 +124,8 @@ void WaveThumbnail::paint (juce::Graphics& g)
 
 void WaveThumbnail::resized()
 {
-    mStartPosSlider.setBoundsRelative(0.f, 0.f, 1.f, 1.f);
-    mRandomStartSlider.setBoundsRelative(0.f, 0.f, 1.f, 1.f);
+    mStartPosSlider.setBoundsRelative(0.2f, 0.f, 1.f, 1.f);
+    mRandomStartSlider.setBoundsRelative(0.f, 0.f, 0.2f, 1.f);
     mZoomSlider.setBoundsRelative(0.f, 0.f, 1.f, 0.1f);
 }
 

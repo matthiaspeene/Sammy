@@ -26,7 +26,11 @@ void CustomSamplerVoice::startNote(int midiNoteNumber, float velocity, Synthesis
         pitchRatio = std::pow(2.0, (midiNoteNumber - sound->midiRootNote) / 12.0)
             * sound->sourceSampleRate / getSampleRate();
 
-        sourceSamplePosition = sound->length / 100 * sound->startPos;
+        float randomStart = random.nextFloat();
+        DBG(randomStart);
+        DBG(sound->startRand);
+
+        sourceSamplePosition = sound->length / 100 * sound->startPos + sound->startRand * randomStart;
         lgain = velocity;
         rgain = velocity;
 

@@ -42,5 +42,7 @@ private:
 
     ADSR adsr;
 
+    juce::Random random;
+
     JUCE_LEAK_DETECTOR(SamplerVoice)
 };
