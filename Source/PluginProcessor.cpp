@@ -162,6 +162,12 @@ void SammyAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
         mStartPosShouldUpdate = false;
     }
 
+    if (mStartRandShouldUpdate)
+    {
+        updateStartRandom();
+        mStartRandShouldUpdate = false;
+    }
+
     MidiMessage m;
 
     MidiBuffer::Iterator it{ midiMessages };
@@ -263,6 +269,7 @@ void SammyAudioProcessor::loadFile()
 
             updateADSR();
             updateStartPos();
+            updateStartRandom();
         }
         else
         {
@@ -343,7 +350,9 @@ void SammyAudioProcessor::updateStartPos()
 
 void SammyAudioProcessor::updateStartRandom()
 {
-    mStartRandom = mAPVTS.getRawParameterValue("RANDOM START")->load();
+    mStartRandom = mAPVTS.getRawParameterValue("RANDOMS")->load();
+
+    DBG(mStartRandom);
 
     for (int i = 0; i < mSampler.getNumSounds(); ++i)
     {
@@ -366,7 +375,7 @@ AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParamet
     parameters.push_back(std::make_unique<AudioParameterFloat>("SUSTAIN", "Sustain", 0.0f, 1.0f, 1.0f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("RELEASE", "Release", 0.0f, 20.0f, 0.012f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("START", "Start Position", 0.f, 100.f, 0.f));
-    parameters.push_back(std::make_unique<AudioParameterFloat>("RANDOM START", "Start Position Randomization", 0.f, 100.f, 0.f));
+    parameters.push_back(std::make_unique<AudioParameterFloat>("RANDOMS", "Start Position Randomization", 0.f, 100.f, 0.f));
 
     return { parameters.begin(), parameters.end() };
 }
@@ -375,6 +384,7 @@ void SammyAudioProcessor::valueTreePropertyChanged(ValueTree& treeWhoseProperyha
 {
     mADSRShouldUpdate = true;
     mStartPosShouldUpdate = true;
+    mStartRandShouldUpdate = true;
 }
 
 

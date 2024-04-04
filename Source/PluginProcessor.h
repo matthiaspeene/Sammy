@@ -97,6 +97,7 @@ private:
 
     std::atomic<bool> mADSRShouldUpdate{ false };
     std::atomic<bool> mStartPosShouldUpdate{ false };
+    std::atomic<bool> mStartRandShouldUpdate{ false };
     std::atomic<bool> mIsNotePlaying{ false };
     std::atomic<int> mSampleCount{ 0 };
 

@@ -42,7 +42,8 @@ WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
     mRandomStartSlider.setScrollWheelEnabled(false);
     addAndMakeVisible(mRandomStartSlider);
 
-    mRandomStartAttachment = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "RANDOM START", mRandomStartSlider);
+    mRandomStartAttachment = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "RANDOMS", mRandomStartSlider);
+    mRandomStartSlider.setValue(0.f);
 
     mZoomSlider.setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
     mZoomSlider.setTextBoxStyle(Slider::NoTextBox, false, 0, 0);

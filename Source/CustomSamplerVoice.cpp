@@ -27,10 +27,12 @@ void CustomSamplerVoice::startNote(int midiNoteNumber, float velocity, Synthesis
             * sound->sourceSampleRate / getSampleRate();
 
         float randomStart = random.nextFloat();
-        DBG(randomStart);
-        DBG(sound->startRand);
 
-        sourceSamplePosition = sound->length / 100 * sound->startPos + sound->startRand * randomStart;
+        DBG(sound->startRand);
+        DBG(randomStart);
+
+        sourceSamplePosition = (sound->length / 100 * sound->startPos) + (sound->startRand / 100.f * randomStart * sound->length);
+        DBG(sourceSamplePosition);
         lgain = velocity;
         rgain = velocity;
 
