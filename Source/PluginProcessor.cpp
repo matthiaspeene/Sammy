@@ -243,7 +243,11 @@ juce::AudioBuffer<float> downmixToStereo(const juce::AudioBuffer<float>& inputBu
 
 void SammyAudioProcessor::loadFile()
 {
-    mSampler.clearSounds();
+    if (mSampler.getSound(samplerIndex) != nullptr)
+    {
+        mSampler.removeSound(samplerIndex);
+        DBG("Sound Removed");
+    }
 
     FileChooser chooser{ "Load File" };
 
@@ -258,7 +262,7 @@ void SammyAudioProcessor::loadFile()
             BigInteger range;
             range.setRange(0, 128, true);
  
-            mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, mADSRParams.attack, mADSRParams.release, 120.0));
+            mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, mADSRParams[samplerIndex].attack, mADSRParams[samplerIndex].release, 120.0));
 
             updateADSR();
             updateStartPos();
@@ -304,31 +308,31 @@ bool SammyAudioProcessor::loadFile(const String& path)
     }
 
     auto sampleLength = static_cast<int>(reader->lengthInSamples);
-    mWaveForm.setSize(1, sampleLength);
-    reader->read(&mWaveForm, 0, sampleLength, 0, true, false);
+    mWaveForm[samplerIndex].setSize(1, sampleLength);
+    reader->read(&mWaveForm[samplerIndex], 0, sampleLength, 0, true, false);
 
     // Create a SamplerSound and add it to the sampler
     BigInteger range;
     range.setRange(0, 128, true);
     
     DBG(path.substring(path.lastIndexOf("\\")+1));
-    mSampler.addSound(new CustomSamplerSound(path.substring(path.lastIndexOf("\\") + 1), *reader, range, 60, mADSRParams.attack, mADSRParams.release, 120.0));
+    mSampler.addSound(new CustomSamplerSound(path.substring(path.lastIndexOf("\\") + 1), *reader, range, 60, mADSRParams[samplerIndex].attack, mADSRParams[samplerIndex].release, 120.0));
     return true;
 }
 
 
 void SammyAudioProcessor::updateADSR()
 {
-    mADSRParams.attack = mAPVTS.getRawParameterValue("ATTACK")->load();
-    mADSRParams.decay = mAPVTS.getRawParameterValue("DECAY")->load();
-    mADSRParams.sustain = mAPVTS.getRawParameterValue("SUSTAIN")->load();
-    mADSRParams.release = mAPVTS.getRawParameterValue("RELEASE")->load();
+    mADSRParams[samplerIndex].attack = mAPVTS.getRawParameterValue("ATTACK")->load();
+    mADSRParams[samplerIndex].decay = mAPVTS.getRawParameterValue("DECAY")->load();
+    mADSRParams[samplerIndex].sustain = mAPVTS.getRawParameterValue("SUSTAIN")->load();
+    mADSRParams[samplerIndex].release = mAPVTS.getRawParameterValue("RELEASE")->load();
 
     //for (int i = 0; i < mSampler.getNumSounds(); ++i)
     {
         if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
         {
-            sound->setEnvelopeParameters(mADSRParams);
+            sound->setEnvelopeParameters(mADSRParams[samplerIndex]);
         }
     }
 }
@@ -360,8 +364,6 @@ void SammyAudioProcessor::updateStartRandom()
         }
     }
 }
-
-
 
 AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParameters()
 {

@@ -59,15 +59,19 @@ public:
 
     int getNumSamlerSounds() { return mSampler.getNumSounds(); }
 
-    AudioBuffer<float>& getWaveForm() { return mWaveForm; }
+    AudioBuffer<float>& getWaveForm() { return mWaveForm[samplerIndex]; }
 
     AudioProcessorValueTreeState& getAPVTS() { return mAPVTS; }
 
     void updateADSR();
     void updateStartPos();
     void updateStartRandom();
-    ADSR::Parameters& getADSRParams() { return mADSRParams; }
+
+    ADSR::Parameters& getADSRParams() { return mADSRParams[samplerIndex]; }
     float& getStartPos() { return mStartPos; }
+    int getSampleIndex() { return samplerIndex; };
+
+    void SammyAudioProcessor::setIndex(int index) { samplerIndex = index; }
 
     std::atomic<bool>& isNotePlaying() { return mIsNotePlaying; }
     std::atomic<int>& getSampleCount() { return  mSampleCount; }
@@ -81,9 +85,9 @@ public:
 private:
     Synthesiser mSampler;
     const int mNumVoices{16};
-    AudioBuffer<float> mWaveForm;
+    AudioBuffer<float> mWaveForm[12];
 
-    ADSR::Parameters mADSRParams;
+    ADSR::Parameters mADSRParams[12];
     float mStartPos{ 0 };
     float mStartRandom{ 0 };
 

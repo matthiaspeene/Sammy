@@ -12,6 +12,7 @@
 #include "PluginProcessor.h"
 #include "WaveThumbnail.h"
 #include "ADSRComponent.h"
+#include "IndexTabs.h"
 
 //==============================================================================
 /**
@@ -33,7 +34,8 @@ public:
 
 private:
     WaveThumbnail mWaveThumbnail;
-    ADSRComponent mADSR;
+    ADSRComponent mADSR[12];
+    IndexTabs mIndexTab;
 
     Colour& bgColour;
     Colour& midColour;

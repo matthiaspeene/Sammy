@@ -53,7 +53,7 @@ private:
     Colour& modColour;
     Colour& modulatorColour;
 
-    Path wavePath;
+    Path wavePath[12];
 
     SammyAudioProcessor& processor;
 

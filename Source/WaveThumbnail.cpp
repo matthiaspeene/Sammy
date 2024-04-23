@@ -99,9 +99,9 @@ void WaveThumbnail::paint (juce::Graphics& g)
         mZoomSlider.setEnabled(true);
 
         g.setColour(midColour);
-        g.fillPath(wavePath);
+        g.fillPath(wavePath[processor.getSampleIndex()]);
         g.setColour(darkColour);
-        g.strokePath(wavePath, PathStrokeType(2));
+        g.strokePath(wavePath[processor.getSampleIndex()], PathStrokeType(2));
     }
     else if (mShouldDisplayError)
     {
@@ -235,7 +235,7 @@ void WaveThumbnail::updateWaveForm()
 
             p.lineTo(sample, point);
         }
-        wavePath = p;
+        wavePath[processor.getSampleIndex()] = p;
     }
 }
 
