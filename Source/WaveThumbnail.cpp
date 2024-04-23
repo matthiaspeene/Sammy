@@ -34,7 +34,7 @@ WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
     mStartPosAttachment = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "START", mStartPosSlider);
     mStartPosSlider.setValue(0.f);
 
-    mRandomStartSlider.setSliderStyle(Slider::SliderStyle::LinearBarVertical);
+    mRandomStartSlider.setSliderStyle(Slider::SliderStyle::LinearBar);
     mRandomStartSlider.setTextBoxStyle(Slider::NoTextBox, false, 0, 0);
     mRandomStartSlider.setRange(0.f, 1.f, 0.001f);
     mRandomStartSlider.setColour(Slider::ColourIds::trackColourId, midColour);
@@ -87,13 +87,13 @@ void WaveThumbnail::paint (juce::Graphics& g)
             g.setColour(modulatorColour);
             g.drawLine(playHeadPosition, 0, playHeadPosition, getHeight(), 2.0f);
 
-
+            
             g.setColour(modColour);
             g.drawLine(startSliderPos, 0, startSliderPos, getHeight(), 2.0f);
 
             auto mStartRandomLenght = (getWidth() - startSliderPos) * mRandomStartSlider.getValue() / 100;
 
-            g.fillRect(startSliderPos, 0.f, mStartRandomLenght, 30.f);
+            g.fillRect(startSliderPos, getHeight()-30.f, mStartRandomLenght, 30.f);
         }
 
         mZoomSlider.setEnabled(true);
@@ -125,8 +125,8 @@ void WaveThumbnail::paint (juce::Graphics& g)
 
 void WaveThumbnail::resized()
 {
-    mStartPosSlider.setBoundsRelative(0.2f, 0.f, 1.f, 1.f);
-    mRandomStartSlider.setBoundsRelative(0.f, 0.f, 0.2f, 1.f);
+    mStartPosSlider.setBoundsRelative(0.f, 0.f, 1.f, 0.8f);
+    mRandomStartSlider.setBoundsRelative(0.f, 0.8f, 1.f, 0.2f);
     mZoomSlider.setBoundsRelative(0.f, 0.f, 1.f, 0.1f);
 }
 

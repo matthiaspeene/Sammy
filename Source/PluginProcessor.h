@@ -95,6 +95,8 @@ private:
 
     void valueTreePropertyChanged(ValueTree& treeWhoseProperyhasChanged, const Identifier& propery);
 
+    int samplerIndex{0};
+
     std::atomic<bool> mADSRShouldUpdate{ false };
     std::atomic<bool> mStartPosShouldUpdate{ false };
     std::atomic<bool> mStartRandShouldUpdate{ false };

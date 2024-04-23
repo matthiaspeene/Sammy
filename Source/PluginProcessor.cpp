@@ -178,20 +178,14 @@ void SammyAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
         if (m.isNoteOn())
         {
             mIsNotePlaying = true;
-            // Note is on but what note and how many? Check if I can get data on this and add visualization for each note.
-
-
-
         }
         else if (m.isNoteOff())
         {
             mIsNotePlaying = false;
-            // Stop playhead
         }
     }
 
     mSampleCount = mIsNotePlaying ? mSampleCount += buffer.getNumSamples() : 0;
-
 
     mSampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
@@ -263,8 +257,7 @@ void SammyAudioProcessor::loadFile()
         {
             BigInteger range;
             range.setRange(0, 128, true);
-
-            //TBA: Replace Sampler Sound with my own Sampler with configurable start and loop functionality. 
+ 
             mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, mADSRParams.attack, mADSRParams.release, 120.0));
 
             updateADSR();
@@ -286,7 +279,11 @@ void SammyAudioProcessor::loadFile()
 
 bool SammyAudioProcessor::loadFile(const String& path)
 {
-    mSampler.clearSounds();
+    if (mSampler.getSound(samplerIndex) != nullptr)
+    {
+        mSampler.removeSound(samplerIndex);
+        DBG("Sound Removed");
+    }
 
     auto file = File(path);
 
@@ -313,8 +310,9 @@ bool SammyAudioProcessor::loadFile(const String& path)
     // Create a SamplerSound and add it to the sampler
     BigInteger range;
     range.setRange(0, 128, true);
-    mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, mADSRParams.attack, mADSRParams.release, 120.0));
-
+    
+    DBG(path.substring(path.lastIndexOf("\\")+1));
+    mSampler.addSound(new CustomSamplerSound(path.substring(path.lastIndexOf("\\") + 1), *reader, range, 60, mADSRParams.attack, mADSRParams.release, 120.0));
     return true;
 }
 
@@ -326,9 +324,9 @@ void SammyAudioProcessor::updateADSR()
     mADSRParams.sustain = mAPVTS.getRawParameterValue("SUSTAIN")->load();
     mADSRParams.release = mAPVTS.getRawParameterValue("RELEASE")->load();
 
-    for (int i = 0; i < mSampler.getNumSounds(); ++i)
+    //for (int i = 0; i < mSampler.getNumSounds(); ++i)
     {
-        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(i).get()))
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
         {
             sound->setEnvelopeParameters(mADSRParams);
         }
@@ -339,9 +337,9 @@ void SammyAudioProcessor::updateStartPos()
 {
     mStartPos = mAPVTS.getRawParameterValue("START")->load();
 
-    for (int i = 0; i < mSampler.getNumSounds(); ++i)
+    //for (int i = 0; i < mSampler.getNumSounds(); ++i) No longer need to do all sounds. Only active sound
     {
-        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(i).get()))
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
         {
             sound->setStartPos(mStartPos);
         }
@@ -352,11 +350,11 @@ void SammyAudioProcessor::updateStartRandom()
 {
     mStartRandom = mAPVTS.getRawParameterValue("RANDOMS")->load();
 
-    DBG(mStartRandom);
+    //DBG(mStartRandom);
 
-    for (int i = 0; i < mSampler.getNumSounds(); ++i)
+    //for (int i = 0; i < mSampler.getNumSounds(); ++i)
     {
-        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(i).get()))
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
         {
             sound->setStartRandom(mStartRandom);
         }
