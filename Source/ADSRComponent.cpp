@@ -101,6 +101,7 @@ ADSRComponent::ADSRComponent(SammyAudioProcessor& p)
 
 ADSRComponent::~ADSRComponent()
 {
+
 }
 
 void ADSRComponent::paint (juce::Graphics& g)
@@ -114,7 +115,7 @@ void ADSRComponent::resized()
     const auto startX = 0.0f;
     const auto offset = 0.25f;
     const auto dialWith = 0.25f;
-    const auto dialHeight = 1.0f - startY - 12.0f/getWidth();
+    const auto dialHeight = 1.0f - startY - 12.0f / getWidth();
 
     //mLoadButton.setBoundsRelative(getWidth()/ 2 - 50, getHeight()/2 -50, 100 , 100);
     mAttackSlider.setBoundsRelative(startX, startY, dialWith, dialHeight);

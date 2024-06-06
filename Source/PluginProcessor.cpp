@@ -14,15 +14,16 @@
 //==============================================================================
 SammyAudioProcessor::SammyAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-                : AudioProcessor(BusesProperties()
-            #if ! JucePlugin_IsMidiEffect
-            #if ! JucePlugin_IsSynth
-                    .withInput("Input", juce::AudioChannelSet::stereo(), true)
-            #endif
-                    .withOutput("Output", juce::AudioChannelSet::stereo(), true)
-            #endif
+    : AudioProcessor(BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+        .withInput("Input", juce::AudioChannelSet::stereo(), true)
+#endif
+        .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+#endif
     ),
     mAPVTS(*this, nullptr, "PARAMETERS", createParameters())
+
 #endif
 {
     mFormatManager.registerBasicFormats();
@@ -47,29 +48,29 @@ const juce::String SammyAudioProcessor::getName() const
 
 bool SammyAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool SammyAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool SammyAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double SammyAudioProcessor::getTailLengthSeconds() const
@@ -79,8 +80,7 @@ double SammyAudioProcessor::getTailLengthSeconds() const
 
 int SammyAudioProcessor::getNumPrograms()
 {
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    return 1;
 }
 
 int SammyAudioProcessor::getCurrentProgram()
@@ -88,96 +88,74 @@ int SammyAudioProcessor::getCurrentProgram()
     return 0;
 }
 
-void SammyAudioProcessor::setCurrentProgram (int index)
+void SammyAudioProcessor::setCurrentProgram(int index)
 {
 }
 
-const juce::String SammyAudioProcessor::getProgramName (int index)
+const juce::String SammyAudioProcessor::getProgramName(int index)
 {
     return {};
 }
 
-void SammyAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void SammyAudioProcessor::changeProgramName(int index, const juce::String& newName)
 {
 }
 
 //==============================================================================
-void SammyAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void SammyAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     mSampler.setCurrentPlaybackSampleRate(sampleRate);
-
-    updateADSR();
+    updateAllParameters();
 }
 
 void SammyAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool SammyAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool SammyAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
+#if JucePlugin_IsMidiEffect
+    juce::ignoreUnused(layouts);
     return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
+#else
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
+#if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
-   #endif
+#endif
 
     return true;
-  #endif
+#endif
 }
 #endif
 
-void SammyAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void SammyAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    for (auto i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i)
+        buffer.clear(i, 0, buffer.getNumSamples());
 
-    if (mADSRShouldUpdate)
+    if (mParametersShouldUpdate)
     {
-        updateADSR();
-        mADSRShouldUpdate = false;
-    }
-
-    if (mStartPosShouldUpdate)
-    {
-        updateStartPos();
-        mStartPosShouldUpdate = false;
-    }
-
-    if (mStartRandShouldUpdate)
-    {
-        updateStartRandom();
-        mStartRandShouldUpdate = false;
+        updateAllParameters();
+        mParametersShouldUpdate = false;
     }
 
     MidiMessage m;
-
     MidiBuffer::Iterator it{ midiMessages };
     int sample;
 
-    while (it.getNextEvent (m, sample))
+    while (it.getNextEvent(m, sample))
     {
         if (m.isNoteOn())
         {
             mIsNotePlaying = true;
+            pitchRatio = std::pow(2.0, ((m.getNoteNumber()) - midiNoteForNormalPitch + mPitchOffset) / 12.0);
         }
         else if (m.isNoteOff())
         {
@@ -185,61 +163,62 @@ void SammyAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
         }
     }
 
-    mSampleCount = mIsNotePlaying ? mSampleCount += buffer.getNumSamples() : 0;
-
+    mSampleCount = mIsNotePlaying ? mSampleCount + buffer.getNumSamples() : 0;
     mSampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
 //==============================================================================
 bool SammyAudioProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    return true;
 }
 
 juce::AudioProcessorEditor* SammyAudioProcessor::createEditor()
 {
-    return new SammyAudioProcessorEditor (*this);
+    return new SammyAudioProcessorEditor(*this);
 }
 
 //==============================================================================
-void SammyAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void SammyAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
 }
 
-void SammyAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void SammyAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
 }
 
-juce::AudioBuffer<float> downmixToStereo(const juce::AudioBuffer<float>& inputBuffer) // This idea has not yet been implimented.
+void SammyAudioProcessor::updateAllParameters()
 {
-    // Ensure inputBuffer has more than 2 channels
+    updateADSR();
+    updateStartPos();
+    updateStartRandom();
+    updatePitch();
+}
+
+juce::AudioBuffer<float> downmixToStereo(const juce::AudioBuffer<float>& inputBuffer)
+{
     jassert(inputBuffer.getNumChannels() > 2);
 
     int numSamples = inputBuffer.getNumSamples();
-    juce::AudioBuffer<float> stereoBuffer(2, numSamples); // Create stereo buffer
+    juce::AudioBuffer<float> stereoBuffer(2, numSamples);
 
-    // Downmix each sample by averaging all channels
     for (int sample = 0; sample < numSamples; ++sample)
     {
+        float leftSample = 0.0f;
+        float rightSample = 0.0f;
+
         for (int channel = 0; channel < inputBuffer.getNumChannels(); ++channel)
         {
-            // Add current channel's sample to corresponding stereo channel
-            stereoBuffer.getWritePointer(0)[sample] += inputBuffer.getReadPointer(channel)[sample];
-            stereoBuffer.getWritePointer(1)[sample] += inputBuffer.getReadPointer(channel)[sample];
+            leftSample += inputBuffer.getReadPointer(channel)[sample];
+            rightSample += inputBuffer.getReadPointer(channel)[sample];
         }
-    }
 
-    // Normalize stereo mix by dividing by the number of channels
-    stereoBuffer.applyGain(1.0f / inputBuffer.getNumChannels());
+        stereoBuffer.getWritePointer(0)[sample] = leftSample / inputBuffer.getNumChannels();
+        stereoBuffer.getWritePointer(1)[sample] = rightSample / inputBuffer.getNumChannels();
+    }
 
     return stereoBuffer;
 }
-
 
 void SammyAudioProcessor::loadFile()
 {
@@ -250,19 +229,16 @@ void SammyAudioProcessor::loadFile()
     if (chooser.browseForFileToOpen())
     {
         auto file = chooser.getResult();
-
         std::unique_ptr<AudioFormatReader> reader(mFormatManager.createReaderFor(file));
 
         if (reader != nullptr && reader->numChannels <= getTotalNumOutputChannels())
         {
             BigInteger range;
             range.setRange(0, 128, true);
- 
+
             mSampler.addSound(new CustomSamplerSound("Sample", *reader, range, 60, mADSRParams.attack, mADSRParams.release, 120.0));
 
-            updateADSR();
-            updateStartPos();
-            updateStartRandom();
+            updateAllParameters();
         }
         else
         {
@@ -275,7 +251,6 @@ void SammyAudioProcessor::loadFile()
         }
     }
 }
-
 
 bool SammyAudioProcessor::loadFile(const String& path)
 {
@@ -297,8 +272,6 @@ bool SammyAudioProcessor::loadFile(const String& path)
 
     if (reader->numChannels > getTotalNumOutputChannels())
     {
-        // TBA: Add a conversion from files with a higher output to stereo.
-
         DBG("Error: Failed to load audio file or incompatible number of channels.");
         return false;
     }
@@ -307,15 +280,13 @@ bool SammyAudioProcessor::loadFile(const String& path)
     mWaveForm.setSize(1, sampleLength);
     reader->read(&mWaveForm, 0, sampleLength, 0, true, false);
 
-    // Create a SamplerSound and add it to the sampler
     BigInteger range;
     range.setRange(0, 128, true);
-    
-    DBG(path.substring(path.lastIndexOf("\\")+1));
-    mSampler.addSound(new CustomSamplerSound(path.substring(path.lastIndexOf("\\") + 1), *reader, range, 60, mADSRParams.attack, mADSRParams.release, 120.0));
+
+    DBG(path.substring(path.lastIndexOf("\\") + 1));
+    mSampler.addSound(new CustomSamplerSound(path.substring(path.lastIndexOf("\\") + 1), *reader, range, midiNoteForNormalPitch, mADSRParams.attack, mADSRParams.release, 120.0));
     return true;
 }
-
 
 void SammyAudioProcessor::updateADSR()
 {
@@ -324,12 +295,9 @@ void SammyAudioProcessor::updateADSR()
     mADSRParams.sustain = mAPVTS.getRawParameterValue("SUSTAIN")->load();
     mADSRParams.release = mAPVTS.getRawParameterValue("RELEASE")->load();
 
-    //for (int i = 0; i < mSampler.getNumSounds(); ++i)
+    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
     {
-        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
-        {
-            sound->setEnvelopeParameters(mADSRParams);
-        }
+        sound->setEnvelopeParameters(mADSRParams);
     }
 }
 
@@ -337,12 +305,9 @@ void SammyAudioProcessor::updateStartPos()
 {
     mStartPos = mAPVTS.getRawParameterValue("START")->load();
 
-    //for (int i = 0; i < mSampler.getNumSounds(); ++i) No longer need to do all sounds. Only active sound
+    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
     {
-        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
-        {
-            sound->setStartPos(mStartPos);
-        }
+        sound->setStartPos(mStartPos);
     }
 }
 
@@ -350,41 +315,46 @@ void SammyAudioProcessor::updateStartRandom()
 {
     mStartRandom = mAPVTS.getRawParameterValue("RANDOMS")->load();
 
-    //DBG(mStartRandom);
-
-    //for (int i = 0; i < mSampler.getNumSounds(); ++i)
+    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
     {
-        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
-        {
-            sound->setStartRandom(mStartRandom);
-        }
+        sound->setStartRandom(mStartRandom);
     }
 }
 
+void SammyAudioProcessor::updatePitch()
+{
+    mPitchOffset = mAPVTS.getRawParameterValue("PITCH OFFSET")->load();
 
+    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampler.getSound(samplerIndex).get()))
+    {
+        sound->setPitchOffset(mPitchOffset);
+    }
+}
+
+float SammyAudioProcessor::getPitchRatio()
+{
+    return pitchRatio;
+}
 
 AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParameters()
 {
     std::vector<std::unique_ptr<RangedAudioParameter>> parameters;
 
-    // To Do: Check out the AudioParameterFloat and see if the other constructor will be aplicable
     parameters.push_back(std::make_unique<AudioParameterFloat>("ATTACK", "Attack", 0.0f, 20.0f, 0.012f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("DECAY", "Decay", 0.0f, 12.0f, 1.5f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("SUSTAIN", "Sustain", 0.0f, 1.0f, 1.0f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("RELEASE", "Release", 0.0f, 20.0f, 0.012f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("START", "Start Position", 0.f, 100.f, 0.f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("RANDOMS", "Start Position Randomization", 0.f, 100.f, 0.f));
+    parameters.push_back(std::make_unique<AudioParameterFloat>("PITCH OFFSET", "Pitch Offset", -60.f, 60.f, 0.f));
 
     return { parameters.begin(), parameters.end() };
 }
 
 void SammyAudioProcessor::valueTreePropertyChanged(ValueTree& treeWhoseProperyhasChanged, const Identifier& propery)
 {
-    mADSRShouldUpdate = true;
-    mStartPosShouldUpdate = true;
-    mStartRandShouldUpdate = true;
+    mParametersShouldUpdate = true;
 }
-
 
 //==============================================================================
 // This creates new instances of the plugin..

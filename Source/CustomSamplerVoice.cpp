@@ -23,16 +23,21 @@ void CustomSamplerVoice::startNote(int midiNoteNumber, float velocity, Synthesis
 {
     if (auto* sound = dynamic_cast<const CustomSamplerSound*> (s))
     {
-        pitchRatio = std::pow(2.0, (midiNoteNumber - sound->midiRootNote) / 12.0)
+        DBG(sound->pitchOff);
+        DBG(midiNoteNumber);
+
+        pitchRatio = std::pow(2.0, (midiNoteNumber + sound->pitchOff - sound->midiRootNote) / 12.0)
             * sound->sourceSampleRate / getSampleRate();
+
+
 
         float randomStart = random.nextFloat();
 
-        DBG(sound->startRand);
-        DBG(randomStart);
+        //DBG(sound->startRand);
+        //DBG(randomStart);
 
         sourceSamplePosition = (sound->length / 100 * sound->startPos) + (sound->startRand / 100.f * randomStart * sound->length);
-        DBG(sourceSamplePosition);
+        //DBG(sourceSamplePosition);
         lgain = velocity;
         rgain = velocity;
 

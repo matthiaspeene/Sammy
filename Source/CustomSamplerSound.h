@@ -59,6 +59,7 @@ public:
     void setEnvelopeParameters(ADSR::Parameters parametersToUse) { params = parametersToUse; }
     void setStartPos(int startPosistion) { startPos = startPosistion; }
     void setStartRandom(float startRandom) { startRand = startRandom; }
+    void setPitchOffset(double pitchOffset) { pitchOff = pitchOffset; }
 
     //==============================================================================
     bool appliesToNote(int midiNoteNumber) override;
@@ -75,6 +76,7 @@ private:
     int length = 0, midiRootNote = 0;
     int startPos;
     float startRand;
+    double pitchOff{ 0 };
 
     ADSR::Parameters params;
 

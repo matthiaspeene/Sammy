@@ -77,7 +77,7 @@ void WaveThumbnail::paint (juce::Graphics& g)
         //startSliderPos /= 2;
 
         // TBA:: Get the samples played relative to playback speed. Also iterate trough all midi notes and have one play for each note. 
-        auto playHeadPosition = jmap<int>(processor.getSampleCount(), 0, processor.getWaveForm().getNumSamples(), startSliderPos, getWidth());
+        auto playHeadPosition = jmap<int>(processor.getSampleCount() * processor.getPitchRatio(), 0, processor.getWaveForm().getNumSamples(), startSliderPos, getWidth());
         
         if (startSliderPos >= 0.f && startSliderPos <= getWidth())
         {

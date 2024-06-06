@@ -21,6 +21,19 @@ SammyAudioProcessorEditor::SammyAudioProcessorEditor (SammyAudioProcessor& p)
     addAndMakeVisible(mWaveThumbnail);
     addAndMakeVisible(mADSR);
 
+    mPitchSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
+    mPitchSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 40, 20);
+    mPitchSlider.setColour(Slider::ColourIds::thumbColourId, modColour);
+    mPitchSlider.setColour(Slider::ColourIds::rotarySliderFillColourId, modColour);
+    mPitchSlider.setColour(Slider::ColourIds::rotarySliderOutlineColourId, midColour);
+    mPitchSlider.setColour(Slider::ColourIds::textBoxOutlineColourId, darkColour);
+    mPitchSlider.setColour(Slider::ColourIds::textBoxTextColourId, darkColour);
+    mPitchSlider.setColour(Slider::ColourIds::textBoxHighlightColourId, modColour);
+    addAndMakeVisible(mPitchSlider);
+
+    mPitchAttachment = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "PITCH OFFSET", mPitchSlider);
+
+
     startTimerHz(30);
 
 
@@ -53,6 +66,9 @@ void SammyAudioProcessorEditor::resized()
 
     mWaveThumbnail.setBoundsRelative(relativeX, relativeY, 1.0f - 2 * relativeX, halfHeight);
     mADSR.setBoundsRelative(relativeX, halfHeight + 2 * relativeY, thirdWidht, halfHeight/2 - relativeY);
+
+    mPitchSlider.setBoundsRelative(0.5, 0.5, 80, 80);
+
 }
 
 void SammyAudioProcessorEditor::timerCallback()
