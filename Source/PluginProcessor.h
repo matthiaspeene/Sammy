@@ -62,8 +62,6 @@ public:
 
     int getNumSamplerSounds() const { return mSampler.getNumSounds(); }
 
-    juce::AudioBuffer<float>& getWaveForm() { return mWaveForm; }
-
     juce::AudioProcessorValueTreeState& getAPVTS() { return mAPVTS; }
 
     void updateADSR(int sampleIndex);
@@ -75,6 +73,7 @@ public:
 
     juce::ADSR::Parameters& getADSRParams(int sampleIndex) { return mSampleSettings[sampleIndex].adsrParams; }
     float getStartPos(int sampleIndex) const { return mSampleSettings[sampleIndex].startPos; }
+    juce::AudioBuffer<float>& getWaveForm(int index) { return mSampleSettings[index].audioBuffer; }
 
     std::atomic<bool>& isNotePlaying() { return mIsNotePlaying; }
     std::atomic<int>& getSampleCount() { return  mSampleCount; }
@@ -95,11 +94,11 @@ private:
         float startPos{ 0.f };
         float startRandom{ 0.f };
         double pitchOffset{ 0.f };
+        juce::AudioBuffer<float> audioBuffer;
     };
 
     juce::Synthesiser mSampler;
     const int mNumVoices{ 16 };
-    juce::AudioBuffer<float> mWaveForm;
 
     std::vector<SampleSettings> mSampleSettings;
     std::vector<std::unique_ptr<juce::AudioFormatReader>> mFormatReaders;

@@ -34,7 +34,7 @@ SammyAudioProcessor::SammyAudioProcessor()
         mSampler.addVoice(new CustomSamplerVoice());
     }
 
-    initializeSampleSettings(1);
+    initializeSampleSettings(8);
 }
 
 SammyAudioProcessor::~SammyAudioProcessor()
@@ -275,8 +275,8 @@ bool SammyAudioProcessor::loadFile(const juce::String& path, int sampleIndex)
     }
 
     auto sampleLength = static_cast<int>(reader->lengthInSamples);
-    mWaveForm.setSize(1, sampleLength);
-    reader->read(&mWaveForm, 0, sampleLength, 0, true, false);
+    mSampleSettings[sampleIndex].audioBuffer.setSize(reader->numChannels, sampleLength);
+    reader->read(&mSampleSettings[sampleIndex].audioBuffer, 0, sampleLength, 0, true, true);
 
     BigInteger range;
     range.setRange(0, 128, true);
@@ -285,6 +285,7 @@ bool SammyAudioProcessor::loadFile(const juce::String& path, int sampleIndex)
     mSampler.addSound(new CustomSamplerSound(path.substring(path.lastIndexOf("\\") + 1), *reader, range, midiNoteForNormalPitch, mSampleSettings[sampleIndex].adsrParams.attack, mSampleSettings[sampleIndex].adsrParams.release, 120.0));
     return true;
 }
+
 
 void SammyAudioProcessor::updateADSR(int sampleIndex)
 {

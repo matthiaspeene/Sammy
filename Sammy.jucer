@@ -10,6 +10,10 @@
       <FILE id="uXGlfV" name="ADSRComponent.cpp" compile="1" resource="0"
             file="Source/ADSRComponent.cpp"/>
       <FILE id="YwO2NG" name="ADSRComponent.h" compile="0" resource="0" file="Source/ADSRComponent.h"/>
+      <FILE id="UbBEyA" name="SampleSelectorComponent.cpp" compile="1" resource="0"
+            file="Source/SampleSelectorComponent.cpp"/>
+      <FILE id="yMnPum" name="SampleSelectorComponent.h" compile="0" resource="0"
+            file="Source/SampleSelectorComponent.h"/>
       <FILE id="jnpuFP" name="WaveThumbnail.cpp" compile="1" resource="0"
             file="Source/WaveThumbnail.cpp"/>
       <FILE id="OFyIBp" name="WaveThumbnail.h" compile="0" resource="0" file="Source/WaveThumbnail.h"/>

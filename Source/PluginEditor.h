@@ -1,7 +1,9 @@
 /*
   ==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin editor.
+    PluginEditor.h
+    Created: 26 Feb 2024 1:17:36pm
+    Author:  matth
 
   ==============================================================================
 */
@@ -12,6 +14,7 @@
 #include "PluginProcessor.h"
 #include "WaveThumbnail.h"
 #include "ADSRComponent.h"
+#include "SampleSelectorComponent.h"
 
 //==============================================================================
 /**
@@ -34,6 +37,7 @@ public:
 private:
     WaveThumbnail mWaveThumbnail;
     ADSRComponent mADSR;
+    SampleSelectorComponent mSampleSelector;
 
     Slider mPitchSlider;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mPitchAttachment;
@@ -46,11 +50,7 @@ private:
 
     SammyAudioProcessor& processor;
 
-    juce::ComboBox sampleSelector;
-    juce::TextButton loadButton{ "Load Sample" };
-
-    void loadSample();
-    void updateSampleSettingsUI();
+    void updateUIForSample(int sampleIndex);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SammyAudioProcessorEditor)
 };
