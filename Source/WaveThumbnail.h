@@ -30,6 +30,7 @@ public:
     void filesDropped(const StringArray& files, int x, int y) override;
 
     void updateWaveForm();
+    void setSampleIndex(int index);
 
     void setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator);
 
@@ -54,6 +55,8 @@ private:
     Colour& modulatorColour;
 
     Path wavePath;
+
+    int sampleIndex;
 
     SammyAudioProcessor& processor;
 

@@ -15,7 +15,8 @@
 
 //==============================================================================
 WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
-    : bgColour(p.getBgColour()),
+    :
+    bgColour(p.getBgColour()),
     midColour(p.getMidColour()),
     darkColour(p.getDarkColour()),
     modColour(p.getModColour()),
@@ -77,7 +78,7 @@ void WaveThumbnail::paint (juce::Graphics& g)
         //startSliderPos /= 2;
 
         // TBA:: Get the samples played relative to playback speed. Also iterate trough all midi notes and have one play for each note. 
-        auto playHeadPosition = jmap<int>(processor.getSampleCount() * processor.getPitchRatio(), 0, processor.getWaveForm().getNumSamples(), startSliderPos, getWidth());
+        auto playHeadPosition = jmap<int>(processor.getSampleCount() * processor.getPitchRatio(sampleIndex), 0, processor.getWaveForm().getNumSamples(), startSliderPos, getWidth());
         
         if (startSliderPos >= 0.f && startSliderPos <= getWidth())
         {
@@ -152,7 +153,7 @@ void WaveThumbnail::filesDropped(const StringArray& files, int x, int y)
         if (isInterestedInFileDrag(file))
         {
             mShouldBePainting = true;
-            if (!processor.loadFile(file))
+            if (!processor.loadFile(file, sampleIndex))
             {
                 mShouldDisplayError = true;
                 mShouldBePainting = false;
@@ -160,8 +161,8 @@ void WaveThumbnail::filesDropped(const StringArray& files, int x, int y)
         }
     }
     mStartPosSlider.valueChanged();
-    processor.updateStartPos();
-    processor.updateStartRandom();
+    processor.updateStartPos(sampleIndex);
+    processor.updateStartRandom(sampleIndex);
     updateWaveForm();
     repaint();
 }
@@ -239,6 +240,13 @@ void WaveThumbnail::updateWaveForm()
     }
 }
 
+void WaveThumbnail::setSampleIndex(int index)
+{
+    sampleIndex = index;
+    repaint();
+}
+
+
 void WaveThumbnail::setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator)
 {
     bgColour = bg;
@@ -247,4 +255,3 @@ void WaveThumbnail::setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mo
     modColour = mod;
     modulatorColour = modulator;
 }
-

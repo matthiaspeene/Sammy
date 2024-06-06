@@ -17,14 +17,14 @@
 /**
 */
 class SammyAudioProcessorEditor : public juce::AudioProcessorEditor,
-                                  public Timer
+    public Timer
 {
 public:
-    SammyAudioProcessorEditor (SammyAudioProcessor&);
+    SammyAudioProcessorEditor(SammyAudioProcessor&);
     ~SammyAudioProcessorEditor() override;
 
     //==============================================================================
-    void paint (juce::Graphics&) override;
+    void paint(juce::Graphics&) override;
     void resized() override;
 
     void timerCallback() override;
@@ -46,5 +46,11 @@ private:
 
     SammyAudioProcessor& processor;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SammyAudioProcessorEditor)
+    juce::ComboBox sampleSelector;
+    juce::TextButton loadButton{ "Load Sample" };
+
+    void loadSample();
+    void updateSampleSettingsUI();
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SammyAudioProcessorEditor)
 };
