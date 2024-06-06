@@ -55,12 +55,11 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    void initializeSampleSettings(int numSamples);
+    void initializeSampleSettings();
 
-    void loadFile();
     bool loadFile(const juce::String& path, int sampleIndex);
 
-    int getNumSamplerSounds() const { return mSampler.getNumSounds(); }
+    int getNumSamplerSounds() const { return mNumVoices; }
 
     juce::AudioProcessorValueTreeState& getAPVTS() { return mAPVTS; }
 
@@ -95,10 +94,46 @@ private:
         float startRandom{ 0.f };
         double pitchOffset{ 0.f };
         juce::AudioBuffer<float> audioBuffer;
+        std::unique_ptr<juce::Synthesiser> synth;
+
+        SampleSettings()
+            : synth(std::make_unique<juce::Synthesiser>())
+        {
+        }
+
+        // Disable copying
+        SampleSettings(const SampleSettings&) = delete;
+        SampleSettings& operator=(const SampleSettings&) = delete;
+
+        // Enable moving
+        SampleSettings(SampleSettings&& other) noexcept
+            : adsrParams(std::move(other.adsrParams)),
+            startPos(other.startPos),
+            startRandom(other.startRandom),
+            pitchOffset(other.pitchOffset),
+            audioBuffer(std::move(other.audioBuffer)),
+            synth(std::move(other.synth))
+        {
+        }
+
+        SampleSettings& operator=(SampleSettings&& other) noexcept
+        {
+            if (this != &other)
+            {
+                adsrParams = std::move(other.adsrParams);
+                startPos = other.startPos;
+                startRandom = other.startRandom;
+                pitchOffset = other.pitchOffset;
+                audioBuffer = std::move(other.audioBuffer);
+                synth = std::move(other.synth);
+            }
+            return *this;
+        }
     };
 
-    juce::Synthesiser mSampler;
-    const int mNumVoices{ 16 };
+
+    const int mNumSamplers{ 8 };
+    const int mNumVoices{ 4 };
 
     std::vector<SampleSettings> mSampleSettings;
     std::vector<std::unique_ptr<juce::AudioFormatReader>> mFormatReaders;
