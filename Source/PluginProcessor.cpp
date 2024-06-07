@@ -98,10 +98,7 @@ void SammyAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
         settings.synth->setCurrentPlaybackSampleRate(sampleRate);
     }
 
-    for (int i = 0; i < mSampleSettings.size(); ++i)
-    {
-        updateAllParameters(i);
-    }
+    updateAllParameters(mSelectedSampleIndex); // Do we even need this one?
 }
 
 void SammyAudioProcessor::releaseResources()
@@ -133,43 +130,26 @@ void SammyAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
 {
     juce::ScopedNoDenormals noDenormals;
 
-    for (auto i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i)
-        buffer.clear(i, 0, buffer.getNumSamples());
+    // Clear unused output channels
+    buffer.clear(getTotalNumInputChannels(), buffer.getNumSamples());
 
     if (mParametersShouldUpdate)
     {
-        for (int i = 0; i < mSampleSettings.size(); ++i)
-        {
-            updateAllParameters(i);
-        }
+        updateAllParameters(mSelectedSampleIndex);
         mParametersShouldUpdate = false;
     }
 
-    // Process MIDI messages
-    MidiBuffer::Iterator it{ midiMessages };
-    MidiMessage m;
-    int samplePosition;
-
-    while (it.getNextEvent(m, samplePosition))
-    {
-        if (m.isNoteOn() || m.isNoteOff())
-        {
-            for (auto& settings : mSampleSettings)
-            {
-                MidiBuffer singleMidiMessage;
-                singleMidiMessage.addEvent(m, samplePosition);
-
-                settings.synth->renderNextBlock(buffer, singleMidiMessage, 0, buffer.getNumSamples());
-            }
-        }
-    }
-
-    // Process audio
+    // Process MIDI messages and audio
     for (auto& settings : mSampleSettings)
     {
-        settings.synth->renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+        if (settings.synth.get()->getSound(0) != nullptr)
+        {
+            settings.synth->renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+        }
     }
 }
+
+
 
 //==============================================================================
 bool SammyAudioProcessor::hasEditor() const
@@ -256,10 +236,6 @@ bool SammyAudioProcessor::loadFile(const juce::String& path, int sampleIndex)
 void SammyAudioProcessor::updateADSR(int sampleIndex)
 {
     auto& adsrParams = mSampleSettings[sampleIndex].adsrParams;
-    adsrParams.attack = mAPVTS.getRawParameterValue("ATTACK")->load();
-    adsrParams.decay = mAPVTS.getRawParameterValue("DECAY")->load();
-    adsrParams.sustain = mAPVTS.getRawParameterValue("SUSTAIN")->load();
-    adsrParams.release = mAPVTS.getRawParameterValue("RELEASE")->load();
 
     if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[sampleIndex].synth->getSound(0).get()))
     {
@@ -270,7 +246,6 @@ void SammyAudioProcessor::updateADSR(int sampleIndex)
 void SammyAudioProcessor::updateStartPos(int sampleIndex)
 {
     auto& startPos = mSampleSettings[sampleIndex].startPos;
-    startPos = mAPVTS.getRawParameterValue("START")->load();
 
     if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[sampleIndex].synth->getSound(0).get()))
     {
@@ -281,7 +256,6 @@ void SammyAudioProcessor::updateStartPos(int sampleIndex)
 void SammyAudioProcessor::updateStartRandom(int sampleIndex)
 {
     auto& startRandom = mSampleSettings[sampleIndex].startRandom;
-    startRandom = mAPVTS.getRawParameterValue("RANDOMS")->load();
 
     if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[sampleIndex].synth->getSound(0).get()))
     {
@@ -292,7 +266,6 @@ void SammyAudioProcessor::updateStartRandom(int sampleIndex)
 void SammyAudioProcessor::updatePitch(int sampleIndex)
 {
     auto& pitchOffset = mSampleSettings[sampleIndex].pitchOffset;
-    pitchOffset = mAPVTS.getRawParameterValue("PITCH OFFSET")->load();
 
     if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[sampleIndex].synth->getSound(0).get()))
     {
@@ -308,7 +281,7 @@ float SammyAudioProcessor::getPitchRatio(int sampleIndex) const
 void SammyAudioProcessor::selectSample(int sampleIndex)
 {
     mSelectedSampleIndex = sampleIndex;
-    updateAllParameters(sampleIndex);
+    updateAllParameters(mSelectedSampleIndex);
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParameters()

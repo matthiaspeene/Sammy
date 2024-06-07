@@ -29,15 +29,9 @@ void CustomSamplerVoice::startNote(int midiNoteNumber, float velocity, Synthesis
         pitchRatio = std::pow(2.0, (midiNoteNumber + sound->pitchOff - sound->midiRootNote) / 12.0)
             * sound->sourceSampleRate / getSampleRate();
 
-
-
         float randomStart = random.nextFloat();
 
-        //DBG(sound->startRand);
-        //DBG(randomStart);
-
         sourceSamplePosition = (sound->length / 100 * sound->startPos) + (sound->startRand / 100.f * randomStart * sound->length);
-        //DBG(sourceSamplePosition);
         lgain = velocity;
         rgain = velocity;
 
@@ -80,16 +74,23 @@ void CustomSamplerVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int s
         float* outL = outputBuffer.getWritePointer(0, startSample);
         float* outR = outputBuffer.getNumChannels() > 1 ? outputBuffer.getWritePointer(1, startSample) : nullptr;
 
+        const int maxSampleIndex = playingSound->length - 1;
+
         while (--numSamples >= 0)
         {
-            auto pos = (int)sourceSamplePosition;
-            auto alpha = (float)(sourceSamplePosition - pos);
+            auto pos = static_cast<int>(sourceSamplePosition);
+            auto alpha = static_cast<float>(sourceSamplePosition - pos);
             auto invAlpha = 1.0f - alpha;
 
-            // just using a very simple linear interpolation here..
+            if (pos + 1 >= maxSampleIndex)
+            {
+                stopNote(0.0f, false);
+                break;
+            }
+
+            // Linear interpolation
             float l = (inL[pos] * invAlpha + inL[pos + 1] * alpha);
-            float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + 1] * alpha)
-                : l;
+            float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + 1] * alpha) : l;
 
             auto envelopeValue = adsr.getNextSample();
 
@@ -116,6 +117,3 @@ void CustomSamplerVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int s
         }
     }
 }
-
-
-

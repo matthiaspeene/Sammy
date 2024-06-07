@@ -71,7 +71,8 @@ public:
     float getPitchRatio(int sampleIndex) const;
 
     juce::ADSR::Parameters& getADSRParams(int sampleIndex) { return mSampleSettings[sampleIndex].adsrParams; }
-    float getStartPos(int sampleIndex) const { return mSampleSettings[sampleIndex].startPos; }
+    float& getStartPos(int sampleIndex) { return mSampleSettings[sampleIndex].startPos; }
+    float& getStartRandom(int sampleIndex) { return mSampleSettings[sampleIndex].startRandom; }
     juce::AudioBuffer<float>& getWaveForm(int index) { return mSampleSettings[index].audioBuffer; }
 
     std::atomic<bool>& isNotePlaying() { return mIsNotePlaying; }

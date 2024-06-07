@@ -16,7 +16,7 @@
 //==============================================================================
 /*
 */
-class WaveThumbnail : public juce::Component, public juce::FileDragAndDropTarget
+class WaveThumbnail : public juce::Component, public juce::FileDragAndDropTarget, public juce::Slider::Listener
 {
 public:
     WaveThumbnail(SammyAudioProcessor& p);
@@ -29,6 +29,7 @@ public:
     void filesDropped(const juce::StringArray& files, int x, int y) override;
 
     void setSampleIndex(int index);
+    void updateSettings(int index);
     void setColours(juce::Colour& bg, juce::Colour& mid, juce::Colour& dark, juce::Colour& mod, juce::Colour& modulator);
 
 private:
@@ -49,6 +50,8 @@ private:
     int sampleIndex{ 0 };
     bool mShouldBePainting{ false };
     bool mShouldDisplayError{ false };
+
+    void sliderValueChanged(juce::Slider* slider) override;
 
     SammyAudioProcessor& processor;
 

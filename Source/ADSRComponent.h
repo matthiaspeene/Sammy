@@ -27,7 +27,7 @@ public:
     void resized() override;
 
     void setSampleIndex(int index);
-    void updateSettings();
+    void updateSettings(int sampleIndex);
 
     void setColours(juce::Colour& bg, juce::Colour& mid, juce::Colour& dark, juce::Colour& mod, juce::Colour& modulator);
 

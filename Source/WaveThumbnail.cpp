@@ -1,17 +1,5 @@
-/*
-  ==============================================================================
-
-    WaveThumbnail.cpp
-    Created: 26 Feb 2024 12:22:44am
-    Author:  matth
-
-  ==============================================================================
-*/
-
 #include <JuceHeader.h>
 #include "WaveThumbnail.h"
-
-//TBA:: Make this a viewport so the scrollbar can be used and the wave only needs to be drawn once.
 
 //==============================================================================
 WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
@@ -28,6 +16,7 @@ WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
     mStartPosSlider.setColour(Slider::ColourIds::trackColourId, midColour);
     mStartPosSlider.setAlpha(0.f);
     mStartPosSlider.setScrollWheelEnabled(false);
+    mStartPosSlider.addListener(this); // Add listener
     addAndMakeVisible(mStartPosSlider);
 
     mStartPosAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "START", mStartPosSlider);
@@ -39,6 +28,7 @@ WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
     mRandomStartSlider.setColour(Slider::ColourIds::trackColourId, midColour);
     mRandomStartSlider.setAlpha(0.f);
     mRandomStartSlider.setScrollWheelEnabled(false);
+    mRandomStartSlider.addListener(this); // Add listener
     addAndMakeVisible(mRandomStartSlider);
 
     mRandomStartAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "RANDOMS", mRandomStartSlider);
@@ -232,11 +222,36 @@ void WaveThumbnail::updateWaveForm(int index)
     }
 }
 
+void WaveThumbnail::sliderValueChanged(Slider* slider)
+{
+    if (slider == &mRandomStartSlider)
+    {
+        processor.getStartRandom(sampleIndex) = mRandomStartSlider.getValue();
+    }
+    else if (slider == &mStartPosSlider)
+    {
+        processor.getStartPos(sampleIndex) = mStartPosSlider.getValue();
+    }
+
+    processor.updateStartPos(sampleIndex);
+    processor.updateStartRandom(sampleIndex);
+}
+
 void WaveThumbnail::setSampleIndex(int index)
 {
     sampleIndex = index;
     updateWaveForm(index);
+    updateSettings(index);
     repaint();
+}
+
+void WaveThumbnail::updateSettings(int index)
+{
+    const auto& startPos = processor.getStartPos(index);
+    const auto& startRandom = processor.getStartRandom(index);
+
+    mStartPosSlider.setValue(startPos, juce::dontSendNotification);
+    mRandomStartSlider.setValue(startRandom, juce::dontSendNotification);
 }
 
 void WaveThumbnail::setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator)

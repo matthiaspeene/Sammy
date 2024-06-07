@@ -149,17 +149,19 @@ void ADSRComponent::sliderValueChanged(Slider* slider)
 void ADSRComponent::setSampleIndex(int index)
 {
     sampleIndex = index;
-    updateSettings();
+    updateSettings(sampleIndex);
 }
 
-void ADSRComponent::updateSettings()
+void ADSRComponent::updateSettings(int index)
 {
-    const auto& adsrParams = processor.getADSRParams(sampleIndex);
-    mAttackSlider.setValue(adsrParams.attack);
-    mDecaySlider.setValue(adsrParams.decay);
-    mSustainSlider.setValue(adsrParams.sustain);
-    mReleaseSlider.setValue(adsrParams.release);
+    const auto& adsrParams = processor.getADSRParams(index);
+
+    mAttackSlider.setValue(adsrParams.attack, juce::dontSendNotification);
+    mDecaySlider.setValue(adsrParams.decay, juce::dontSendNotification);
+    mSustainSlider.setValue(adsrParams.sustain, juce::dontSendNotification);
+    mReleaseSlider.setValue(adsrParams.release, juce::dontSendNotification);
 }
+
 
 void ADSRComponent::setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator)
 {
