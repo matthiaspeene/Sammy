@@ -16,36 +16,40 @@
 //==============================================================================
 /*
 */
-class ADSRComponent  : public juce::Component
+class ADSRComponent : public juce::Component,
+    public juce::Slider::Listener
 {
 public:
     ADSRComponent(SammyAudioProcessor& p);
     ~ADSRComponent() override;
 
-    void paint (juce::Graphics&) override;
+    void paint(juce::Graphics&) override;
     void resized() override;
 
-    void sliderValueChange(Slider* slider);
+    void setSampleIndex(int index);
+    void updateSettings(int sampleIndex);
 
-
-    void setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator);
+    void setColours(juce::Colour& bg, juce::Colour& mid, juce::Colour& dark, juce::Colour& mod, juce::Colour& modulator);
 
 private:
-    Slider mAttackSlider, mDecaySlider, mSustainSlider, mReleaseSlider;
-    Label mAttackLabel, mDecayLabel, mSustainLabel, mReleaseLabel;
+    juce::Slider mAttackSlider, mDecaySlider, mSustainSlider, mReleaseSlider;
+    juce::Label mAttackLabel, mDecayLabel, mSustainLabel, mReleaseLabel;
 
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mAttackAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mDecayAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mSustainAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mReleaseAttachment;
 
-    Colour& bgColour;
-    Colour& midColour;
-    Colour& darkColour;
-    Colour& modColour;
-    Colour& modulatorColour;
+    juce::Colour& bgColour;
+    juce::Colour& midColour;
+    juce::Colour& darkColour;
+    juce::Colour& modColour;
+    juce::Colour& modulatorColour;
 
     SammyAudioProcessor& processor;
+    int sampleIndex{ 0 };
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ADSRComponent)
+    void sliderValueChanged(juce::Slider* slider) override;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ADSRComponent)
 };

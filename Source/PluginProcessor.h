@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <vector>
 
 //==============================================================================
 /**
@@ -54,24 +55,25 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    void loadFile();
-    bool loadFile(const juce::String& path);
+    void initializeSampleSettings();
 
-    int getNumSamplerSounds() const { return mSampler.getNumSounds(); }
+    bool loadFile(const juce::String& path, int sampleIndex);
 
-    juce::AudioBuffer<float>& getWaveForm() { return mWaveForm; }
+    int getNumSamplerSounds() const { return mNumVoices; }
 
     juce::AudioProcessorValueTreeState& getAPVTS() { return mAPVTS; }
 
-    void updateADSR();
-    void updateStartPos();
-    void updateStartRandom();
-    void updatePitch();
+    void updateADSR(int sampleIndex);
+    void updateStartPos(int sampleIndex);
+    void updateStartRandom(int sampleIndex);
+    void updatePitch(int sampleIndex);
 
-    float getPitchRatio();
+    float getPitchRatio(int sampleIndex) const;
 
-    juce::ADSR::Parameters& getADSRParams() { return mADSRParams; }
-    float getStartPos() const { return mStartPos; }
+    juce::ADSR::Parameters& getADSRParams(int sampleIndex) { return mSampleSettings[sampleIndex].adsrParams; }
+    float& getStartPos(int sampleIndex) { return mSampleSettings[sampleIndex].startPos; }
+    float& getStartRandom(int sampleIndex) { return mSampleSettings[sampleIndex].startRandom; }
+    juce::AudioBuffer<float>& getWaveForm(int index) { return mSampleSettings[index].audioBuffer; }
 
     std::atomic<bool>& isNotePlaying() { return mIsNotePlaying; }
     std::atomic<int>& getSampleCount() { return  mSampleCount; }
@@ -82,28 +84,69 @@ public:
     juce::Colour& getModColour() { return modColour; }
     juce::Colour& getModulatorColour() { return modulatorColour; }
 
-private:
-    juce::Synthesiser mSampler;
-    const int mNumVoices{ 16 };
-    juce::AudioBuffer<float> mWaveForm;
+    void selectSample(int sampleIndex);
+    int getSelectedSampleIndex() const { return mSelectedSampleIndex; }
 
-    float pitchRatio{ 1.0f };
+private:
+    struct SampleSettings
+    {
+        juce::ADSR::Parameters adsrParams;
+        float startPos{ 0.f };
+        float startRandom{ 0.f };
+        double pitchOffset{ 0.f };
+        juce::AudioBuffer<float> audioBuffer;
+        std::unique_ptr<juce::Synthesiser> synth;
+
+        SampleSettings()
+            : synth(std::make_unique<juce::Synthesiser>())
+        {
+        }
+
+        // Disable copying
+        SampleSettings(const SampleSettings&) = delete;
+        SampleSettings& operator=(const SampleSettings&) = delete;
+
+        // Enable moving
+        SampleSettings(SampleSettings&& other) noexcept
+            : adsrParams(std::move(other.adsrParams)),
+            startPos(other.startPos),
+            startRandom(other.startRandom),
+            pitchOffset(other.pitchOffset),
+            audioBuffer(std::move(other.audioBuffer)),
+            synth(std::move(other.synth))
+        {
+        }
+
+        SampleSettings& operator=(SampleSettings&& other) noexcept
+        {
+            if (this != &other)
+            {
+                adsrParams = std::move(other.adsrParams);
+                startPos = other.startPos;
+                startRandom = other.startRandom;
+                pitchOffset = other.pitchOffset;
+                audioBuffer = std::move(other.audioBuffer);
+                synth = std::move(other.synth);
+            }
+            return *this;
+        }
+    };
+
+
+    const int mNumSamplers{ 8 };
+    const int mNumVoices{ 4 };
+
+    std::vector<SampleSettings> mSampleSettings;
+    std::vector<std::unique_ptr<juce::AudioFormatReader>> mFormatReaders;
+
     int midiNoteForNormalPitch{ 60 };
 
-    juce::ADSR::Parameters mADSRParams;
-    float mStartPos{ 0.f };
-    float mStartRandom{ 0.f };
-    double mPitchOffset{ 0.0 };
-
     juce::AudioFormatManager mFormatManager;
-    juce::AudioFormatReader* mFormatReader{ nullptr };
 
     juce::AudioProcessorValueTreeState mAPVTS;
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
     void valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property) override;
-
-    int samplerIndex{ 0 };
 
     std::atomic<bool> mParametersShouldUpdate{ false };
     std::atomic<bool> mIsNotePlaying{ false };
@@ -115,7 +158,9 @@ private:
     juce::Colour modColour{ 255, 158, 158 };
     juce::Colour modulatorColour{ 195, 255, 177 };
 
-    void updateAllParameters();
+    void updateAllParameters(int sampleIndex);
+
+    int mSelectedSampleIndex{ 0 }; // Track the currently selected sample
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SammyAudioProcessor)

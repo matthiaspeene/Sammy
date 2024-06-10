@@ -1,7 +1,9 @@
 /*
   ==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin editor.
+    PluginEditor.h
+    Created: 26 Feb 2024 1:17:36pm
+    Author:  matth
 
   ==============================================================================
 */
@@ -12,19 +14,20 @@
 #include "PluginProcessor.h"
 #include "WaveThumbnail.h"
 #include "ADSRComponent.h"
+#include "SampleSelectorComponent.h"
 
 //==============================================================================
 /**
 */
 class SammyAudioProcessorEditor : public juce::AudioProcessorEditor,
-                                  public Timer
+    public Timer
 {
 public:
-    SammyAudioProcessorEditor (SammyAudioProcessor&);
+    SammyAudioProcessorEditor(SammyAudioProcessor&);
     ~SammyAudioProcessorEditor() override;
 
     //==============================================================================
-    void paint (juce::Graphics&) override;
+    void paint(juce::Graphics&) override;
     void resized() override;
 
     void timerCallback() override;
@@ -34,6 +37,7 @@ public:
 private:
     WaveThumbnail mWaveThumbnail;
     ADSRComponent mADSR;
+    SampleSelectorComponent mSampleSelector;
 
     Slider mPitchSlider;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mPitchAttachment;
@@ -46,5 +50,7 @@ private:
 
     SammyAudioProcessor& processor;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SammyAudioProcessorEditor)
+    void updateUIForSample(int sampleIndex);
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SammyAudioProcessorEditor)
 };

@@ -1,7 +1,9 @@
 /*
   ==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin editor.
+    PluginEditor.cpp
+    Created: 26 Feb 2024 1:17:36pm
+    Author:  matth
 
   ==============================================================================
 */
@@ -10,8 +12,9 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-SammyAudioProcessorEditor::SammyAudioProcessorEditor (SammyAudioProcessor& p)
-    : AudioProcessorEditor (&p), mWaveThumbnail(p), mADSR(p), processor(p),
+SammyAudioProcessorEditor::SammyAudioProcessorEditor(SammyAudioProcessor& p)
+    : AudioProcessorEditor(&p), mWaveThumbnail(p), mADSR(p), processor(p),
+    mSampleSelector(p),
     bgColour(p.getBgColour()),
     midColour(p.getMidColour()),
     darkColour(p.getDarkColour()),
@@ -20,6 +23,9 @@ SammyAudioProcessorEditor::SammyAudioProcessorEditor (SammyAudioProcessor& p)
 {
     addAndMakeVisible(mWaveThumbnail);
     addAndMakeVisible(mADSR);
+    addAndMakeVisible(mSampleSelector);
+
+    mSampleSelector.onSampleButtonClicked = [this](int index) { updateUIForSample(index); }; // Important callback. This updates the UI
 
     mPitchSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
     mPitchSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 40, 20);
@@ -31,16 +37,12 @@ SammyAudioProcessorEditor::SammyAudioProcessorEditor (SammyAudioProcessor& p)
     mPitchSlider.setColour(Slider::ColourIds::textBoxHighlightColourId, modColour);
     addAndMakeVisible(mPitchSlider);
 
-    mPitchAttachment = std::make_unique <AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "PITCH OFFSET", mPitchSlider);
-
+    mPitchAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "PITCH OFFSET", mPitchSlider);
 
     startTimerHz(30);
 
-
-
-
     setColours();
-    setSize (900, 600);
+    setSize(900, 600);
 }
 
 SammyAudioProcessorEditor::~SammyAudioProcessorEditor()
@@ -49,26 +51,20 @@ SammyAudioProcessorEditor::~SammyAudioProcessorEditor()
 }
 
 //==============================================================================
-void SammyAudioProcessorEditor::paint (juce::Graphics& g)
+void SammyAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-
     g.fillAll(midColour);
 }
 
 void SammyAudioProcessorEditor::resized()
 {
-    float relativeX{ 12.0f / getWidth() };
-    float relativeY{ 12.0f / getHeight() };
+    auto area = getLocalBounds();
+    auto selectorHeight = 30;
 
-    float halfHeight{ 282.f / 600.f };
-    float thirdWidht{ 284.0f / 900.0f };
-
-    mWaveThumbnail.setBoundsRelative(relativeX, relativeY, 1.0f - 2 * relativeX, halfHeight);
-    mADSR.setBoundsRelative(relativeX, halfHeight + 2 * relativeY, thirdWidht, halfHeight/2 - relativeY);
-
+    mSampleSelector.setBounds(area.removeFromTop(selectorHeight));
+    mWaveThumbnail.setBounds(area.removeFromTop(area.getHeight() / 2));
+    mADSR.setBounds(area.removeFromLeft(area.getWidth() / 2));
     mPitchSlider.setBoundsRelative(0.5, 0.5, 80, 80);
-
 }
 
 void SammyAudioProcessorEditor::timerCallback()
@@ -81,4 +77,9 @@ void SammyAudioProcessorEditor::setColours()
     mWaveThumbnail.setColours(bgColour, midColour, darkColour, modColour, modulatorColour);
 }
 
-
+void SammyAudioProcessorEditor::updateUIForSample(int sampleIndex)
+{
+    processor.selectSample(sampleIndex);
+    mWaveThumbnail.setSampleIndex(sampleIndex);
+    mADSR.setSampleIndex(sampleIndex);
+}

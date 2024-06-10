@@ -16,48 +16,44 @@
 //==============================================================================
 /*
 */
-class WaveThumbnail  : public juce::Component,
-                       public FileDragAndDropTarget
+class WaveThumbnail : public juce::Component, public juce::FileDragAndDropTarget, public juce::Slider::Listener
 {
 public:
     WaveThumbnail(SammyAudioProcessor& p);
     ~WaveThumbnail() override;
 
-    void paint (juce::Graphics&) override;
+    void paint(juce::Graphics&) override;
     void resized() override;
 
-    bool isInterestedInFileDrag(const StringArray& files) override;
-    void filesDropped(const StringArray& files, int x, int y) override;
+    bool isInterestedInFileDrag(const juce::StringArray& files) override;
+    void filesDropped(const juce::StringArray& files, int x, int y) override;
 
-    void updateWaveForm();
-
-    void setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator);
+    void setSampleIndex(int index);
+    void updateSettings(int index);
+    void setColours(juce::Colour& bg, juce::Colour& mid, juce::Colour& dark, juce::Colour& mod, juce::Colour& modulator);
 
 private:
+    void updateWaveForm(int index);
+
+    juce::Slider mStartPosSlider, mRandomStartSlider, mZoomSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mStartPosAttachment, mRandomStartAttachment;
+
+    juce::Path wavePath;
     std::vector<float> mAudioPoints;
 
+    juce::Colour& bgColour;
+    juce::Colour& midColour;
+    juce::Colour& darkColour;
+    juce::Colour& modColour;
+    juce::Colour& modulatorColour;
+
+    int sampleIndex{ 0 };
     bool mShouldBePainting{ false };
     bool mShouldDisplayError{ false };
 
-    Slider mStartPosSlider;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mStartPosAttachment;
-
-    Slider mRandomStartSlider;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mRandomStartAttachment;
-
-    Slider mZoomSlider;
-
-    Colour& bgColour;
-    Colour& midColour;
-    Colour& darkColour;
-    Colour& modColour;
-    Colour& modulatorColour;
-
-    Path wavePath;
+    void sliderValueChanged(juce::Slider* slider) override;
 
     SammyAudioProcessor& processor;
 
-    AudioBuffer<float>& waveform;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WaveThumbnail)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WaveThumbnail)
 };
