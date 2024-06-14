@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "SampleSelectorComponent.h"
 
 //==============================================================================
 /*
@@ -19,7 +20,7 @@
 class WaveThumbnail : public juce::Component, public juce::FileDragAndDropTarget, public juce::Slider::Listener
 {
 public:
-    WaveThumbnail(SammyAudioProcessor& p);
+    WaveThumbnail(SammyAudioProcessor& p, SampleSelectorComponent& s);
     ~WaveThumbnail() override;
 
     void paint(juce::Graphics&) override;
@@ -28,12 +29,12 @@ public:
     bool isInterestedInFileDrag(const juce::StringArray& files) override;
     void filesDropped(const juce::StringArray& files, int x, int y) override;
 
-    void setSampleIndex(int index);
-    void updateSettings(int index);
+    void setSampleIndex();
+    void updateSettings();
     void setColours(juce::Colour& bg, juce::Colour& mid, juce::Colour& dark, juce::Colour& mod, juce::Colour& modulator);
 
 private:
-    void updateWaveForm(int index);
+    void updateWaveForm();
 
     juce::Slider mStartPosSlider, mRandomStartSlider, mZoomSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mStartPosAttachment, mRandomStartAttachment;
@@ -47,12 +48,12 @@ private:
     juce::Colour& modColour;
     juce::Colour& modulatorColour;
 
-    int sampleIndex{ 0 };
     bool mShouldBePainting{ false };
     bool mShouldDisplayError{ false };
 
     void sliderValueChanged(juce::Slider* slider) override;
 
+    SampleSelectorComponent& sampleSelector;
     SammyAudioProcessor& processor;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WaveThumbnail)

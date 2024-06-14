@@ -2,12 +2,13 @@
 #include "WaveThumbnail.h"
 
 //==============================================================================
-WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
+WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p, SampleSelectorComponent& s)
     : bgColour(p.getBgColour()),
     midColour(p.getMidColour()),
     darkColour(p.getDarkColour()),
     modColour(p.getModColour()),
     modulatorColour(p.getModulatorColour()),
+    sampleSelector(s),
     processor(p)
 {
     mStartPosSlider.setSliderStyle(Slider::SliderStyle::LinearBar);
@@ -42,7 +43,7 @@ WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p)
     addAndMakeVisible(mZoomSlider);
 
     mZoomSlider.onValueChange = [this]() {
-        updateWaveForm(sampleIndex);
+        updateWaveForm();
         repaint();
         };
 }
@@ -55,13 +56,13 @@ void WaveThumbnail::paint(juce::Graphics& g)
 {
     g.fillAll(bgColour);
 
-    if (mShouldBePainting && processor.getWaveForm(sampleIndex).getNumSamples() > 0)
+    if (mShouldBePainting && processor.getWaveForm().getNumSamples() > 0)
     {
         mStartPosSlider.setEnabled(true);
         mRandomStartSlider.setEnabled(true);
 
         auto startSliderPos = mStartPosSlider.getValue() / 100 / mZoomSlider.getMaxValue() * getWidth();
-        auto playHeadPosition = jmap<int>(processor.getSampleCount() * processor.getPitchRatio(sampleIndex), 0, processor.getWaveForm(sampleIndex).getNumSamples(), startSliderPos, getWidth());
+        auto playHeadPosition = jmap<int>(processor.getSampleCount() * processor.getPitchRatio(), 0, processor.getWaveForm().getNumSamples(), startSliderPos, getWidth());
 
         if (startSliderPos >= 0.f && startSliderPos <= getWidth())
         {
@@ -132,7 +133,7 @@ void WaveThumbnail::filesDropped(const StringArray& files, int x, int y)
         if (isInterestedInFileDrag(file))
         {
             mShouldBePainting = true;
-            if (!processor.loadFile(file, sampleIndex))
+            if (!processor.loadFile(file))
             {
                 mShouldDisplayError = true;
                 mShouldBePainting = false;
@@ -140,15 +141,16 @@ void WaveThumbnail::filesDropped(const StringArray& files, int x, int y)
         }
     }
     mStartPosSlider.valueChanged();
-    processor.updateStartPos(sampleIndex);
-    processor.updateStartRandom(sampleIndex);
-    updateWaveForm(sampleIndex);
+    processor.updateStartPos();
+    processor.updateStartRandom();
+    updateWaveForm();
+    sampleSelector.sampleLoaded(processor.getSelectedSampleIndex());
     repaint();
 }
 
-void WaveThumbnail::updateWaveForm(int index)
+void WaveThumbnail::updateWaveForm()
 {
-    auto& waveform = processor.getWaveForm(index);
+    auto& waveform = processor.getWaveForm();
 
     if (waveform.getNumSamples() > 0)
     {
@@ -226,29 +228,28 @@ void WaveThumbnail::sliderValueChanged(Slider* slider)
 {
     if (slider == &mRandomStartSlider)
     {
-        processor.getStartRandom(sampleIndex) = mRandomStartSlider.getValue();
+        processor.getStartRandom() = mRandomStartSlider.getValue();
     }
     else if (slider == &mStartPosSlider)
     {
-        processor.getStartPos(sampleIndex) = mStartPosSlider.getValue();
+        processor.getStartPos() = mStartPosSlider.getValue();
     }
 
-    processor.updateStartPos(sampleIndex);
-    processor.updateStartRandom(sampleIndex);
+    processor.updateStartPos();
+    processor.updateStartRandom();
 }
 
-void WaveThumbnail::setSampleIndex(int index)
+void WaveThumbnail::setSampleIndex()
 {
-    sampleIndex = index;
-    updateWaveForm(index);
-    updateSettings(index);
+    updateWaveForm();
+    updateSettings();
     repaint();
 }
 
-void WaveThumbnail::updateSettings(int index)
+void WaveThumbnail::updateSettings()
 {
-    const auto& startPos = processor.getStartPos(index);
-    const auto& startRandom = processor.getStartRandom(index);
+    const auto& startPos = processor.getStartPos();
+    const auto& startRandom = processor.getStartRandom();
 
     mStartPosSlider.setValue(startPos, juce::dontSendNotification);
     mRandomStartSlider.setValue(startRandom, juce::dontSendNotification);

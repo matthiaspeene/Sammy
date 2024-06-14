@@ -57,23 +57,24 @@ public:
 
     void initializeSampleSettings();
 
-    bool loadFile(const juce::String& path, int sampleIndex);
+    bool loadFile(const juce::String& path);
 
     int getNumSamplerSounds() const { return mNumVoices; }
 
     juce::AudioProcessorValueTreeState& getAPVTS() { return mAPVTS; }
 
-    void updateADSR(int sampleIndex);
-    void updateStartPos(int sampleIndex);
-    void updateStartRandom(int sampleIndex);
-    void updatePitch(int sampleIndex);
+    void updateADSR();
+    void updateStartPos();
+    void updateStartRandom();
+    void updatePitch();
 
-    float getPitchRatio(int sampleIndex) const;
+    float getPitchRatio() const;
 
-    juce::ADSR::Parameters& getADSRParams(int sampleIndex) { return mSampleSettings[sampleIndex].adsrParams; }
-    float& getStartPos(int sampleIndex) { return mSampleSettings[sampleIndex].startPos; }
-    float& getStartRandom(int sampleIndex) { return mSampleSettings[sampleIndex].startRandom; }
-    juce::AudioBuffer<float>& getWaveForm(int index) { return mSampleSettings[index].audioBuffer; }
+    juce::ADSR::Parameters& getADSRParams() { return mSampleSettings[mSelectedSampleIndex].adsrParams; }
+    float& getStartPos() { return mSampleSettings[mSelectedSampleIndex].startPos; }
+    float& getStartRandom() { return mSampleSettings[mSelectedSampleIndex].startRandom; }
+    juce::AudioBuffer<float>& getWaveForm() { return mSampleSettings[mSelectedSampleIndex].audioBuffer; }
+    juce::String getSampleName() { return mSampleSettings[mSelectedSampleIndex].name; }
 
     std::atomic<bool>& isNotePlaying() { return mIsNotePlaying; }
     std::atomic<int>& getSampleCount() { return  mSampleCount; }
@@ -85,11 +86,13 @@ public:
     juce::Colour& getModulatorColour() { return modulatorColour; }
 
     void selectSample(int sampleIndex);
+    void removeCurrentSample();
     int getSelectedSampleIndex() const { return mSelectedSampleIndex; }
 
 private:
     struct SampleSettings
     {
+        juce::String name{ "Empty" };
         juce::ADSR::Parameters adsrParams;
         float startPos{ 0.f };
         float startRandom{ 0.f };
@@ -131,7 +134,6 @@ private:
             return *this;
         }
     };
-
 
     const int mNumSamplers{ 8 };
     const int mNumVoices{ 4 };

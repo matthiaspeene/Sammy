@@ -39,9 +39,6 @@ private:
     ADSRComponent mADSR;
     SampleSelectorComponent mSampleSelector;
 
-    Slider mPitchSlider;
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> mPitchAttachment;
-
     Colour& bgColour;
     Colour& midColour;
     Colour& darkColour;

@@ -13,7 +13,7 @@
 
 //==============================================================================
 SammyAudioProcessorEditor::SammyAudioProcessorEditor(SammyAudioProcessor& p)
-    : AudioProcessorEditor(&p), mWaveThumbnail(p), mADSR(p), processor(p),
+    : AudioProcessorEditor(&p), mWaveThumbnail(p, mSampleSelector), mADSR(p), processor(p),
     mSampleSelector(p),
     bgColour(p.getBgColour()),
     midColour(p.getMidColour()),
@@ -26,18 +26,6 @@ SammyAudioProcessorEditor::SammyAudioProcessorEditor(SammyAudioProcessor& p)
     addAndMakeVisible(mSampleSelector);
 
     mSampleSelector.onSampleButtonClicked = [this](int index) { updateUIForSample(index); }; // Important callback. This updates the UI
-
-    mPitchSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
-    mPitchSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 40, 20);
-    mPitchSlider.setColour(Slider::ColourIds::thumbColourId, modColour);
-    mPitchSlider.setColour(Slider::ColourIds::rotarySliderFillColourId, modColour);
-    mPitchSlider.setColour(Slider::ColourIds::rotarySliderOutlineColourId, midColour);
-    mPitchSlider.setColour(Slider::ColourIds::textBoxOutlineColourId, darkColour);
-    mPitchSlider.setColour(Slider::ColourIds::textBoxTextColourId, darkColour);
-    mPitchSlider.setColour(Slider::ColourIds::textBoxHighlightColourId, modColour);
-    addAndMakeVisible(mPitchSlider);
-
-    mPitchAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "PITCH OFFSET", mPitchSlider);
 
     startTimerHz(30);
 
@@ -64,8 +52,8 @@ void SammyAudioProcessorEditor::resized()
     mSampleSelector.setBounds(area.removeFromTop(selectorHeight));
     mWaveThumbnail.setBounds(area.removeFromTop(area.getHeight() / 2));
     mADSR.setBounds(area.removeFromLeft(area.getWidth() / 2));
-    mPitchSlider.setBoundsRelative(0.5, 0.5, 80, 80);
 }
+
 
 void SammyAudioProcessorEditor::timerCallback()
 {
@@ -80,6 +68,6 @@ void SammyAudioProcessorEditor::setColours()
 void SammyAudioProcessorEditor::updateUIForSample(int sampleIndex)
 {
     processor.selectSample(sampleIndex);
-    mWaveThumbnail.setSampleIndex(sampleIndex);
-    mADSR.setSampleIndex(sampleIndex);
+    mWaveThumbnail.setSampleIndex();
+    mADSR.updateSettings();
 }

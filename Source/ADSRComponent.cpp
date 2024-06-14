@@ -128,33 +128,27 @@ void ADSRComponent::sliderValueChanged(Slider* slider)
 {
     if (slider == &mAttackSlider)
     {
-        processor.getADSRParams(sampleIndex).attack = mAttackSlider.getValue();
+        processor.getADSRParams().attack = mAttackSlider.getValue();
     }
     else if (slider == &mDecaySlider)
     {
-        processor.getADSRParams(sampleIndex).decay = mDecaySlider.getValue();
+        processor.getADSRParams().decay = mDecaySlider.getValue();
     }
     else if (slider == &mSustainSlider)
     {
-        processor.getADSRParams(sampleIndex).sustain = mSustainSlider.getValue();
+        processor.getADSRParams().sustain = mSustainSlider.getValue();
     }
     else if (slider == &mReleaseSlider)
     {
-        processor.getADSRParams(sampleIndex).release = mReleaseSlider.getValue();
+        processor.getADSRParams().release = mReleaseSlider.getValue();
     }
 
-    processor.updateADSR(sampleIndex);
+    processor.updateADSR();
 }
 
-void ADSRComponent::setSampleIndex(int index)
+void ADSRComponent::updateSettings()
 {
-    sampleIndex = index;
-    updateSettings(sampleIndex);
-}
-
-void ADSRComponent::updateSettings(int index)
-{
-    const auto& adsrParams = processor.getADSRParams(index);
+    const auto& adsrParams = processor.getADSRParams();
 
     mAttackSlider.setValue(adsrParams.attack, juce::dontSendNotification);
     mDecaySlider.setValue(adsrParams.decay, juce::dontSendNotification);

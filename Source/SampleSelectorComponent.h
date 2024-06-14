@@ -24,14 +24,21 @@ public:
 
     void paint(juce::Graphics&) override;
     void resized() override;
+    //void setButtonName(int index);
 
     std::function<void(int)> onSampleButtonClicked;
 
+    void sampleLoaded(int index);
+
 private:
+    int buttonCount{8};
     juce::TextButton sampleButtons[8];
+    juce::TextButton clearButton;
+
     SammyAudioProcessor& processor;
 
     void sampleButtonClicked(int index);
+    void clearSampler();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SampleSelectorComponent)
 };

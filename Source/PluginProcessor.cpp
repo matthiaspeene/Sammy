@@ -130,7 +130,6 @@ void SammyAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::M
 {
     juce::ScopedNoDenormals noDenormals;
 
-    // Clear unused output channels
     buffer.clear(getTotalNumInputChannels(), buffer.getNumSamples());
 
     if (mParametersShouldUpdate)
@@ -186,15 +185,16 @@ void SammyAudioProcessor::initializeSampleSettings()
 
 void SammyAudioProcessor::updateAllParameters(int sampleIndex)
 {
-    updateADSR(sampleIndex);
-    updateStartPos(sampleIndex);
-    updateStartRandom(sampleIndex);
-    updatePitch(sampleIndex);
+    // this might be optimized. All the below functions have repeating parts
+    updateADSR();
+    updateStartPos();
+    updateStartRandom();
+    updatePitch();
 }
 
-bool SammyAudioProcessor::loadFile(const juce::String& path, int sampleIndex)
+bool SammyAudioProcessor::loadFile(const juce::String& path)
 {
-    auto& sampleSettings = mSampleSettings[sampleIndex];
+    auto& sampleSettings = mSampleSettings[mSelectedSampleIndex];
     sampleSettings.synth->clearSounds();
 
     auto file = juce::File(path);
@@ -220,68 +220,82 @@ bool SammyAudioProcessor::loadFile(const juce::String& path, int sampleIndex)
     juce::BigInteger range;
     range.setRange(0, 128, true);
 
-    sampleSettings.synth->addSound(new CustomSamplerSound(path.substring(path.lastIndexOf("\\") + 1),
-        *reader,
-        range,
-        60,
-        sampleSettings.adsrParams.attack,
-        sampleSettings.adsrParams.release,
-        120.0));
 
-    DBG(path.substring(path.lastIndexOf("\\") + 1));
+    sampleSettings.name = path.substring(path.lastIndexOf("\\") + 1);
+
+    sampleSettings.synth->addSound(new CustomSamplerSound(
+        sampleSettings.name,
+        *reader,                                    //AudioFormatReader
+        range,                                      //Midi range
+        60,                                         //Midi note for normal pitch
+        sampleSettings.adsrParams.attack,
+        sampleSettings.adsrParams.release,          
+        120.0));                                    //Max lenght
+
+
+    DBG(sampleSettings.name);
 
     return true;
 }
 
-void SammyAudioProcessor::updateADSR(int sampleIndex)
+void SammyAudioProcessor::updateADSR()
 {
-    auto& adsrParams = mSampleSettings[sampleIndex].adsrParams;
+    auto& adsrParams = mSampleSettings[mSelectedSampleIndex].adsrParams;
 
-    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[sampleIndex].synth->getSound(0).get()))
+    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
     {
         sound->setEnvelopeParameters(adsrParams);
     }
 }
 
-void SammyAudioProcessor::updateStartPos(int sampleIndex)
+void SammyAudioProcessor::updateStartPos()
 {
-    auto& startPos = mSampleSettings[sampleIndex].startPos;
+    auto& startPos = mSampleSettings[mSelectedSampleIndex].startPos;
 
-    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[sampleIndex].synth->getSound(0).get()))
+    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
     {
         sound->setStartPos(startPos);
     }
 }
 
-void SammyAudioProcessor::updateStartRandom(int sampleIndex)
+void SammyAudioProcessor::updateStartRandom()
 {
-    auto& startRandom = mSampleSettings[sampleIndex].startRandom;
+    auto& startRandom = mSampleSettings[mSelectedSampleIndex].startRandom;
 
-    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[sampleIndex].synth->getSound(0).get()))
+    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
     {
         sound->setStartRandom(startRandom);
     }
 }
 
-void SammyAudioProcessor::updatePitch(int sampleIndex)
+void SammyAudioProcessor::updatePitch()
 {
-    auto& pitchOffset = mSampleSettings[sampleIndex].pitchOffset;
+    auto& pitchOffset = mSampleSettings[mSelectedSampleIndex].pitchOffset;
 
-    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[sampleIndex].synth->getSound(0).get()))
+    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
     {
         sound->setPitchOffset(pitchOffset);
     }
 }
 
-float SammyAudioProcessor::getPitchRatio(int sampleIndex) const
+float SammyAudioProcessor::getPitchRatio() const
 {
-    return std::pow(2.0, ((/*midiNoteForNormalPitch * we should get this from the synth*/ 60 + mSampleSettings[sampleIndex].pitchOffset) / 12.0));
+    return std::pow(2.0, ((/*midiNoteForNormalPitch * we should get this from the synth*/ 60 + mSampleSettings[mSelectedSampleIndex].pitchOffset) / 12.0));
 }
 
 void SammyAudioProcessor::selectSample(int sampleIndex)
 {
     mSelectedSampleIndex = sampleIndex;
     updateAllParameters(mSelectedSampleIndex);
+}
+
+void SammyAudioProcessor::removeCurrentSample()
+{
+    auto& sampleSettings = mSampleSettings[mSelectedSampleIndex];
+    sampleSettings.synth->clearSounds();
+    sampleSettings.audioBuffer.clear(); // Maybe redundant becouse of setSize
+    sampleSettings.audioBuffer.setSize(0, 0, false, true, false);
+    sampleSettings.name = "Empty";
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParameters()
@@ -294,14 +308,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createP
     parameters.push_back(std::make_unique<AudioParameterFloat>("RELEASE", "Release", 0.0f, 20.0f, 0.012f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("START", "Start Position", 0.f, 100.f, 0.f));
     parameters.push_back(std::make_unique<AudioParameterFloat>("RANDOMS", "Start Position Randomization", 0.f, 100.f, 0.f));
-    parameters.push_back(std::make_unique<AudioParameterFloat>("PITCH OFFSET", "Pitch Offset", -60.f, 60.f, 0.f));
+    parameters.push_back(std::make_unique<AudioParameterFloat>("PITCH OFFSET", "Pitch Offset", -36.f, 36.f, 0.f));
 
     return { parameters.begin(), parameters.end() };
 }
 
 void SammyAudioProcessor::valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property)
 {
-    mParametersShouldUpdate = true;
+    mParametersShouldUpdate = true; // This makes it so that in the proccesor all the parameters will be updated. Can we optimize this? Only update the parameter that changed?
 }
 
 //==============================================================================

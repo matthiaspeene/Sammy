@@ -60,7 +60,9 @@ public:
     void setStartPos(int startPosistion) { startPos = startPosistion; }
     void setStartRandom(float startRandom) { startRand = startRandom; }
     void setPitchOffset(double pitchOffset) { pitchOff = pitchOffset; }
-
+    void setMidiRootNote(int rootNote) { midiRootNote = rootNote; }
+    void setActiveMidiNotes(BigInteger notes) { midiNotes = notes; }
+    
     //==============================================================================
     bool appliesToNote(int midiNoteNumber) override;
     bool appliesToChannel(int midiChannel) override;
