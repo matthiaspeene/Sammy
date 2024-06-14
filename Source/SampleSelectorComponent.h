@@ -35,6 +35,12 @@ private:
     juce::TextButton sampleButtons[8];
     juce::TextButton clearButton;
 
+    juce::Colour& bgColour;
+    juce::Colour& midColour;
+    juce::Colour& darkColour;
+    juce::Colour& modColour;
+    juce::Colour& modulatorColour;
+
     SammyAudioProcessor& processor;
 
     void sampleButtonClicked(int index);

@@ -10,17 +10,30 @@
 
 #include "SampleSelectorComponent.h"
 
-SampleSelectorComponent::SampleSelectorComponent(SammyAudioProcessor& p) : processor(p)
+SampleSelectorComponent::SampleSelectorComponent(SammyAudioProcessor& p) : processor(p),
+    bgColour(p.getBgColour()),
+    midColour(p.getMidColour()),
+    darkColour(p.getDarkColour()),
+    modColour(p.getModColour()),
+    modulatorColour(p.getModulatorColour())
 {
     for (int i = 0; i < buttonCount; ++i)
     {
         sampleButtons[i].setButtonText("Empty " + juce::String(i + 1));
         sampleButtons[i].onClick = [this, i] { sampleButtonClicked(i); };
+        sampleButtons[i].setColour(TextButton::ColourIds::buttonColourId, bgColour);
+        sampleButtons[i].setColour(TextButton::ColourIds::textColourOffId, darkColour);
+        
         addAndMakeVisible(sampleButtons[i]);
     }
 
+    sampleButtons[0].setColour(TextButton::ColourIds::buttonColourId, darkColour);
+    sampleButtons[0].setColour(TextButton::ColourIds::textColourOffId, bgColour);
+
     clearButton.setButtonText("Remove Sample");
     clearButton.onClick = [this]() { clearSampler(); };
+    clearButton.setColour(TextButton::ColourIds::buttonColourId, bgColour);
+    clearButton.setColour(TextButton::ColourIds::textColourOffId, modColour);
     addAndMakeVisible(clearButton);
 }
 
@@ -30,7 +43,7 @@ SampleSelectorComponent::~SampleSelectorComponent()
 
 void SampleSelectorComponent::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::darkgrey);
+    g.fillAll(bgColour);
 }
 
 void SampleSelectorComponent::resized()
@@ -63,5 +76,13 @@ void SampleSelectorComponent::sampleButtonClicked(int index)
     if (onSampleButtonClicked)
     {
         onSampleButtonClicked(index);
+
+        for (int i = 0; i < buttonCount; ++i)
+        {
+            sampleButtons[i].setColour(TextButton::ColourIds::buttonColourId, bgColour);
+            sampleButtons[i].setColour(TextButton::ColourIds::textColourOffId, darkColour);
+        }
+        sampleButtons[index].setColour(TextButton::ColourIds::buttonColourId, darkColour);
+        sampleButtons[index].setColour(TextButton::ColourIds::textColourOffId, bgColour);
     }
 }
