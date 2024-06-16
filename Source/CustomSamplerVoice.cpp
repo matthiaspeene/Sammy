@@ -108,9 +108,12 @@ void CustomSamplerVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int s
                 *outL++ += (l + r) * 0.5f;
             }
 
-            // GPT: here we should also adjust the pitchration if sound->pitchOff has changed.
+            // GPT: here we should also adjust the pitchratio if sound->pitchOff has changed.
 
             sourceSamplePosition += pitchRatio;
+
+            playingSound->setPlayHeadPosition(sourceSamplePosition);
+
 
             if (sourceSamplePosition > playingSound->length)
             {

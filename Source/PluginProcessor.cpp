@@ -1,7 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "CustomSamplerVoice.h"
-#include "CustomSamplerSound.h"
 
 //==============================================================================
 SammyAudioProcessor::SammyAudioProcessor()
@@ -194,49 +193,47 @@ void SammyAudioProcessor::updateAllParameters(int sampleIndex)
 
 bool SammyAudioProcessor::loadFile(const juce::String& path)
 {
+    DBG("Loading file: " + path);
     auto& sampleSettings = mSampleSettings[mSelectedSampleIndex];
     sampleSettings.synth->clearSounds();
 
     auto file = juce::File(path);
-
     if (!file.existsAsFile())
     {
         DBG("Error: File does not exist.");
         return false;
     }
 
-    std::unique_ptr<juce::AudioFormatReader> reader(mFormatManager.createReaderFor(file));
+    auto reader = std::unique_ptr<juce::AudioFormatReader>(mFormatManager.createReaderFor(file));
 
-    if (reader->numChannels > getTotalNumOutputChannels())
-    {
-        DBG("Error: Failed to load audio file or incompatible number of channels.");
+    if (!reader) {
+        DBG("Error: Failed to create audio format reader.");
         return false;
     }
 
-    auto sampleLength = static_cast<int>(reader->lengthInSamples);
-    sampleSettings.audioBuffer.setSize(reader->numChannels, sampleLength);
-    reader->read(&sampleSettings.audioBuffer, 0, sampleLength, 0, true, true);
+    if (reader->numChannels > getTotalNumOutputChannels()) {
+        DBG("Error: Incompatible number of channels.");
+        return false;
+    }
+
 
     juce::BigInteger range;
     range.setRange(0, 128, true);
-
-
     sampleSettings.name = path.substring(path.lastIndexOf("\\") + 1);
 
     sampleSettings.synth->addSound(new CustomSamplerSound(
         sampleSettings.name,
-        *reader,                                    //AudioFormatReader
-        range,                                      //Midi range
-        60,                                         //Midi note for normal pitch
+        *reader,
+        range,
+        60,
         sampleSettings.adsrParams.attack,
-        sampleSettings.adsrParams.release,          
-        120.0));                                    //Max lenght
-
-
-    DBG(sampleSettings.name);
+        sampleSettings.adsrParams.release,
+        120.0));
 
     return true;
 }
+
+
 
 void SammyAudioProcessor::updateADSR()
 {
@@ -278,11 +275,6 @@ void SammyAudioProcessor::updatePitch()
     }
 }
 
-float SammyAudioProcessor::getPitchRatio() const
-{
-    return std::pow(2.0, ((/*midiNoteForNormalPitch * we should get this from the synth*/ 60 + mSampleSettings[mSelectedSampleIndex].pitchOffset) / 12.0));
-}
-
 void SammyAudioProcessor::selectSample(int sampleIndex)
 {
     mSelectedSampleIndex = sampleIndex;
@@ -293,8 +285,6 @@ void SammyAudioProcessor::removeCurrentSample()
 {
     auto& sampleSettings = mSampleSettings[mSelectedSampleIndex];
     sampleSettings.synth->clearSounds();
-    sampleSettings.audioBuffer.clear(); // Maybe redundant becouse of setSize
-    sampleSettings.audioBuffer.setSize(0, 0, false, true, false);
     sampleSettings.name = "Empty";
 }
 
