@@ -56,36 +56,44 @@ void WaveThumbnail::paint(juce::Graphics& g)
 {
     g.fillAll(bgColour);
 
-    if (mShouldBePainting && processor.getWaveForm().getNumSamples() > 0)
+    if (mShouldBePainting)
     {
-        mStartPosSlider.setEnabled(true);
-        mRandomStartSlider.setEnabled(true);
-
-        auto startSliderPos = mStartPosSlider.getValue() / 100 / mZoomSlider.getMaxValue() * getWidth();
-        auto playHeadPosition = jmap<int>(processor.getSampleCount() * processor.getPitchRatio(), 0, processor.getWaveForm().getNumSamples(), startSliderPos, getWidth());
-
-        if (startSliderPos >= 0.f && startSliderPos <= getWidth())
+        if (auto* waveForm = processor.getWaveForm())
         {
-            g.setColour(modulatorColour);
-            g.fillRect(0, 0, startSliderPos, getHeight());
+            mStartPosSlider.setEnabled(true);
+            mRandomStartSlider.setEnabled(true);
 
-            g.setColour(modulatorColour);
-            g.drawLine(playHeadPosition, 0, playHeadPosition, getHeight(), 2.0f);
+            auto startSliderPos = mStartPosSlider.getValue() / 100 / mZoomSlider.getMaxValue() * getWidth();
+            auto playHeadPosition = processor.getPlayHeadPos() * getWidth();
 
-            g.setColour(modColour);
-            g.drawLine(startSliderPos, 0, startSliderPos, getHeight(), 2.0f);
+            if (startSliderPos >= 0.f && startSliderPos <= getWidth())
+            {
+                g.setColour(modulatorColour);
+                g.fillRect(0, 0, startSliderPos, getHeight());
 
-            auto mStartRandomLength = (getWidth() - startSliderPos) * mRandomStartSlider.getValue() / 100;
+                g.setColour(modulatorColour);
+                g.drawLine(playHeadPosition, 0, playHeadPosition, getHeight(), 2.0f);
 
-            g.fillRect(startSliderPos, getHeight() - 30.f, mStartRandomLength, 30.f);
+                g.setColour(modColour);
+                g.drawLine(startSliderPos, 0, startSliderPos, getHeight(), 2.0f);
+
+                auto mStartRandomLength = (getWidth() - startSliderPos) * mRandomStartSlider.getValue() / 100;
+
+                g.fillRect(startSliderPos, getHeight() - 30.f, mStartRandomLength, 30.f);
+            }
+
+            mZoomSlider.setEnabled(true);
+
+            g.setColour(midColour);
+            g.fillPath(wavePath);
+            g.setColour(darkColour);
+            g.strokePath(wavePath, PathStrokeType(2));
         }
-
-        mZoomSlider.setEnabled(true);
-
-        g.setColour(midColour);
-        g.fillPath(wavePath);
-        g.setColour(darkColour);
-        g.strokePath(wavePath, PathStrokeType(2));
+        else
+        {
+            
+            mShouldBePainting = false;
+        }
     }
     else if (mShouldDisplayError)
     {
@@ -150,9 +158,7 @@ void WaveThumbnail::filesDropped(const StringArray& files, int x, int y)
 
 void WaveThumbnail::updateWaveForm()
 {
-    auto& waveform = processor.getWaveForm();
-
-    if (waveform.getNumSamples() > 0)
+    if(auto * audioData = processor.getWaveForm())
     {
         if (mZoomSlider.getMinValue() == mZoomSlider.getMaxValue())
         {
@@ -171,11 +177,11 @@ void WaveThumbnail::updateWaveForm()
         const double rightSamplePos = mZoomSlider.getMaxValue();
         const int width = getWidth();
 
-        const int numSamples = waveform.getNumSamples();
+        const int numSamples = audioData->getNumSamples();
 
         const double ratio = numSamples / static_cast<double>(width) * (rightSamplePos - leftSamplePos);
 
-        const float* buffer = waveform.getReadPointer(0);
+        const float* buffer = audioData->getReadPointer(0);
 
         const int samplesToAverage = ratio / 2;
 
@@ -253,6 +259,8 @@ void WaveThumbnail::updateSettings()
 
     mStartPosSlider.setValue(startPos, juce::dontSendNotification);
     mRandomStartSlider.setValue(startRandom, juce::dontSendNotification);
+    
+    mShouldBePainting = true;
 }
 
 void WaveThumbnail::setColours(Colour& bg, Colour& mid, Colour& dark, Colour& mod, Colour& modulator)
