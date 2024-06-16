@@ -32,8 +32,8 @@ SampleSelectorComponent::SampleSelectorComponent(SammyAudioProcessor& p) : proce
 
     clearButton.setButtonText("Remove Sample");
     clearButton.onClick = [this]() { clearSampler(); };
-    clearButton.setColour(TextButton::ColourIds::buttonColourId, modColour);
-    clearButton.setColour(TextButton::ColourIds::textColourOffId, bgColour);
+    clearButton.setColour(TextButton::ColourIds::buttonColourId, bgColour);
+    clearButton.setColour(TextButton::ColourIds::textColourOffId, modColour);
     addAndMakeVisible(clearButton);
 }
 
