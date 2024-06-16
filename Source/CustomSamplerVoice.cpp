@@ -27,7 +27,7 @@ void CustomSamplerVoice::startNote(int midiNoteNumber, float velocity, Synthesis
         DBG(midiNoteNumber);
 
         pitchRatio = std::pow(2.0, (midiNoteNumber + sound->pitchOff - sound->midiRootNote) / 12.0)
-            * sound->sourceSampleRate / getSampleRate();
+            * sound->sourceSampleRate / getSampleRate(); // Create a method for calculating pitch ofsset
 
         float randomStart = random.nextFloat();
 
@@ -78,6 +78,7 @@ void CustomSamplerVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int s
 
         while (--numSamples >= 0)
         {
+
             auto pos = static_cast<int>(sourceSamplePosition);
             auto alpha = static_cast<float>(sourceSamplePosition - pos);
             auto invAlpha = 1.0f - alpha;
@@ -106,6 +107,8 @@ void CustomSamplerVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int s
             {
                 *outL++ += (l + r) * 0.5f;
             }
+
+            // GPT: here we should also adjust the pitchration if sound->pitchOff has changed.
 
             sourceSamplePosition += pitchRatio;
 
