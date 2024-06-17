@@ -94,7 +94,7 @@ private:
             if (!isBlack) {
 
                 g.setColour(isRootNote ? modColour : darkColour);
-                g.drawRect(offset, 12, keyWidth, keyHeight);
+                isRootNote ? g.fillRect(offset, 12, keyWidth, keyHeight) : g.drawRect(offset, 12, keyWidth, keyHeight);
 
                 if (isC) {
                     juce::String octaveLabel = "C";
@@ -129,8 +129,6 @@ private:
             g.setColour(darkColour);
             g.drawText("Midirange: " + lowestKey + "-" + highestKey, area.getX(), area.getY(), area.getWidth() * 0.6, area.getHeight()/2, juce::Justification::topLeft, false);
             g.drawText("Rootnote: " + rootNote, area.getX(), area.getY() + area.getHeight() / 2, area.getWidth() * 0.6, area.getHeight()/2, juce::Justification::topLeft, false);
-            
-
         }
     }
 
