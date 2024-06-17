@@ -13,7 +13,7 @@ SammyAudioProcessor::SammyAudioProcessor()
         .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
     ),
-    mAPVTS(*this, nullptr, "PARAMETERS", createParameters())
+    mAPVTS(*this, nullptr, "PARAMETERS", createParameters(8))
 #endif
 {
     mFormatManager.registerBasicFormats();
@@ -171,6 +171,7 @@ void SammyAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 
 void SammyAudioProcessor::initializeSampleSettings()
 {
+    int id = 0;
     for (auto& settings : mSampleSettings)
     {
         settings.synth->clearVoices();
@@ -275,6 +276,22 @@ void SammyAudioProcessor::updatePitch()
     }
 }
 
+void SammyAudioProcessor::updateActiveMidiNotes(juce::BigInteger midiNotes)
+{
+    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
+    {
+        sound->setActiveMidiNotes(midiNotes);
+    }
+}
+
+void SammyAudioProcessor::updateRootNote(int rootNote)
+{
+    if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
+    {
+        sound->setMidiRootNote(rootNote);
+    }
+}
+
 void SammyAudioProcessor::selectSample(int sampleIndex)
 {
     mSelectedSampleIndex = sampleIndex;
@@ -288,17 +305,21 @@ void SammyAudioProcessor::removeCurrentSample()
     sampleSettings.name = "Empty";
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParameters()
+juce::AudioProcessorValueTreeState::ParameterLayout SammyAudioProcessor::createParameters(int maxSampleCount)
 {
-    std::vector<std::unique_ptr<RangedAudioParameter>> parameters;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
 
-    parameters.push_back(std::make_unique<AudioParameterFloat>("ATTACK", "Attack", 0.0f, 20.0f, 0.012f));
-    parameters.push_back(std::make_unique<AudioParameterFloat>("DECAY", "Decay", 0.0f, 12.0f, 1.5f));
-    parameters.push_back(std::make_unique<AudioParameterFloat>("SUSTAIN", "Sustain", 0.0f, 1.0f, 1.0f));
-    parameters.push_back(std::make_unique<AudioParameterFloat>("RELEASE", "Release", 0.0f, 20.0f, 0.012f));
-    parameters.push_back(std::make_unique<AudioParameterFloat>("START", "Start Position", 0.f, 100.f, 0.f));
-    parameters.push_back(std::make_unique<AudioParameterFloat>("RANDOMS", "Start Position Randomization", 0.f, 100.f, 0.f));
-    parameters.push_back(std::make_unique<AudioParameterFloat>("PITCH OFFSET", "Pitch Offset", -36.f, 36.f, 0.f));
+    for (int i = 0; i < maxSampleCount; i++)
+    {
+        auto indexStr = juce::String(i);
+        parameters.push_back(std::make_unique<juce::AudioParameterFloat>("ATTACK" + indexStr, "Attack " + indexStr, 0.0f, 20.0f, 0.012f));
+        parameters.push_back(std::make_unique<juce::AudioParameterFloat>("DECAY" + indexStr, "Decay " + indexStr, 0.0f, 12.0f, 1.5f));
+        parameters.push_back(std::make_unique<juce::AudioParameterFloat>("SUSTAIN" + indexStr, "Sustain " + indexStr, 0.0f, 1.0f, 1.0f));
+        parameters.push_back(std::make_unique<juce::AudioParameterFloat>("RELEASE" + indexStr, "Release " + indexStr, 0.0f, 20.0f, 0.012f));
+        parameters.push_back(std::make_unique<juce::AudioParameterFloat>("START" + indexStr, "Start Position " + indexStr, 0.f, 100.f, 0.f));
+        parameters.push_back(std::make_unique<juce::AudioParameterFloat>("RANDOMS" + indexStr, "Start Position Randomization " + indexStr, 0.f, 100.f, 0.f));
+        parameters.push_back(std::make_unique<juce::AudioParameterFloat>("PITCH_OFFSET" + indexStr, "Pitch Offset " + indexStr, -36.f, 36.f, 0.f));
+    }
 
     return { parameters.begin(), parameters.end() };
 }

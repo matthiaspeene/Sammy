@@ -64,7 +64,9 @@ public:
     void setActiveMidiNotes(BigInteger notes) { midiNotes = notes; }
     void setPlayHeadPosition(double position) { activeSamplePosition = position; }
     
-    double getPlayHeadPosition() { return activeSamplePosition * length; }
+    double getPlayHeadPosition() { return activeSamplePosition / length; }
+    juce::BigInteger getMidiRange() { return midiNotes; }
+    int getMidiRootNote() { return midiRootNote; }
 
     //==============================================================================
     bool appliesToNote(int midiNoteNumber) override;

@@ -68,6 +68,8 @@ public:
     void updateStartPos();
     void updateStartRandom();
     void updatePitch();
+    void updateActiveMidiNotes(juce::BigInteger midiNotes);
+    void updateRootNote(int rootNote);
 
     juce::ADSR::Parameters& getADSRParams() { return mSampleSettings[mSelectedSampleIndex].adsrParams; }
     float& getStartPos() { return mSampleSettings[mSelectedSampleIndex].startPos; }
@@ -91,6 +93,32 @@ public:
         }
         else {
             return 0.0;
+        }
+    }
+
+    juce::BigInteger getMidiNotes()
+    {
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
+        {
+            return sound->getMidiRange();
+        }
+        else
+        {
+            juce::BigInteger range;
+            range.setRange(0, 121, true);
+            return range;
+        }
+    }
+
+    int getMidiRootNote()
+    {
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
+        {
+            return sound->getMidiRootNote();
+        }
+        else
+        {
+            return 60;
         }
     }
 
@@ -119,8 +147,8 @@ private:
         float startPos{ 0.f };
         float startRandom{ 0.f };
         double pitchOffset{ 0.f };
-        std::unique_ptr<juce::Synthesiser> synth;
 
+        std::unique_ptr<juce::Synthesiser> synth;
 
         SampleSettings()
             : synth(std::make_unique<juce::Synthesiser>())
@@ -156,7 +184,7 @@ private:
             return *this;
         }
 
-        ~SampleSettings() = default;  // `unique_ptr` will automatically handle cleanup
+        ~SampleSettings() = default;
     };
 
 
@@ -171,7 +199,7 @@ private:
     juce::AudioFormatManager mFormatManager;
 
     juce::AudioProcessorValueTreeState mAPVTS;
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters(int maxSampleCount);
 
     void valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property) override;
 
@@ -179,15 +207,15 @@ private:
     std::atomic<bool> mIsNotePlaying{ false };
     std::atomic<int> mSampleCount{ 0 };
 
-    juce::Colour bgColour{ 245, 252, 255 };
-    juce::Colour midColour{ 192, 234, 255 };
-    juce::Colour darkColour{ 146, 206, 236 };
-    juce::Colour modColour{ 255, 158, 158 };
-    juce::Colour modulatorColour{ 195, 255, 177 };
+    juce::Colour bgColour{ 242, 242, 242 };
+    juce::Colour midColour{ 133, 56, 166 };
+    juce::Colour darkColour{ 71, 4, 89 };
+    juce::Colour modColour{ 242, 202, 87 };
+    juce::Colour modulatorColour{ 115, 134, 191 };
 
     void updateAllParameters(int sampleIndex);
 
-    int mSelectedSampleIndex{ 0 }; // Track the currently selected sample
+    int mSelectedSampleIndex{ 0 };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SammyAudioProcessor)

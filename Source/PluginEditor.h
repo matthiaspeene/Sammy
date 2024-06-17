@@ -15,6 +15,7 @@
 #include "WaveThumbnail.h"
 #include "ADSRComponent.h"
 #include "SampleSelectorComponent.h"
+#include "MIDINoteRangeComponent.h"
 
 //==============================================================================
 /**
@@ -38,6 +39,7 @@ private:
     WaveThumbnail mWaveThumbnail;
     ADSRComponent mADSR;
     SampleSelectorComponent mSampleSelector;
+    MIDINoteRangeComponent mMidiNoteRangeComponent;
 
     Colour& bgColour;
     Colour& midColour;

@@ -38,8 +38,6 @@ ADSRComponent::ADSRComponent(SammyAudioProcessor& p)
     mAttackLabel.setJustificationType(Justification::centredBottom);
     mAttackLabel.attachToComponent(&mAttackSlider, false);
 
-    mAttackAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "ATTACK", mAttackSlider);
-
     // Decay Slider
     mDecaySlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
     mDecaySlider.setTextBoxStyle(Slider::TextBoxBelow, false, 40, 20);
@@ -57,8 +55,6 @@ ADSRComponent::ADSRComponent(SammyAudioProcessor& p)
     mDecayLabel.setColour(Label::ColourIds::textColourId, darkColour);
     mDecayLabel.setJustificationType(Justification::centredBottom);
     mDecayLabel.attachToComponent(&mDecaySlider, false);
-
-    mDecayAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "DECAY", mDecaySlider);
 
     // Sustain Slider
     mSustainSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
@@ -78,8 +74,6 @@ ADSRComponent::ADSRComponent(SammyAudioProcessor& p)
     mSustainLabel.setJustificationType(Justification::centredBottom);
     mSustainLabel.attachToComponent(&mSustainSlider, false);
 
-    mSustainAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "SUSTAIN", mSustainSlider);
-
     // Release Slider
     mReleaseSlider.setSliderStyle(Slider::SliderStyle::RotaryVerticalDrag);
     mReleaseSlider.setColour(Slider::ColourIds::thumbColourId, modColour);
@@ -97,13 +91,41 @@ ADSRComponent::ADSRComponent(SammyAudioProcessor& p)
     mReleaseLabel.setColour(Label::ColourIds::textColourId, darkColour);
     mReleaseLabel.setJustificationType(Justification::centredBottom);
     mReleaseLabel.attachToComponent(&mReleaseSlider, false);
-
-    mReleaseAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "RELEASE", mReleaseSlider);
 }
 
 ADSRComponent::~ADSRComponent()
 {
 }
+
+void ADSRComponent::updateSettings()
+{
+    const auto& adsrParams = processor.getADSRParams();
+    auto indexStr = juce::String(processor.getSelectedSampleIndex());
+
+    mAttackSlider.setValue(adsrParams.attack, juce::dontSendNotification);
+    mDecaySlider.setValue(adsrParams.decay, juce::dontSendNotification);
+    mSustainSlider.setValue(adsrParams.sustain, juce::dontSendNotification);
+    mReleaseSlider.setValue(adsrParams.release, juce::dontSendNotification);
+
+    if (processor.getAPVTS().getParameter("ATTACK" + indexStr) &&
+        processor.getAPVTS().getParameter("DECAY" + indexStr) &&
+        processor.getAPVTS().getParameter("SUSTAIN" + indexStr) &&
+        processor.getAPVTS().getParameter("RELEASE" + indexStr)) {
+
+        mAttackAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(
+            processor.getAPVTS(), "ATTACK" + indexStr, mAttackSlider);
+        mDecayAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(
+            processor.getAPVTS(), "DECAY" + indexStr, mDecaySlider);
+        mSustainAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(
+            processor.getAPVTS(), "SUSTAIN" + indexStr, mSustainSlider);
+        mReleaseAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(
+            processor.getAPVTS(), "RELEASE" + indexStr, mReleaseSlider);
+    }
+    else {
+        DBG("Error: Parameters not found for ADSR settings.");
+    }
+}
+
 
 void ADSRComponent::paint(juce::Graphics& g)
 {
@@ -144,16 +166,6 @@ void ADSRComponent::sliderValueChanged(Slider* slider)
     }
 
     processor.updateADSR();
-}
-
-void ADSRComponent::updateSettings()
-{
-    const auto& adsrParams = processor.getADSRParams();
-
-    mAttackSlider.setValue(adsrParams.attack, juce::dontSendNotification);
-    mDecaySlider.setValue(adsrParams.decay, juce::dontSendNotification);
-    mSustainSlider.setValue(adsrParams.sustain, juce::dontSendNotification);
-    mReleaseSlider.setValue(adsrParams.release, juce::dontSendNotification);
 }
 
 

@@ -13,7 +13,7 @@
 
 //==============================================================================
 SammyAudioProcessorEditor::SammyAudioProcessorEditor(SammyAudioProcessor& p)
-    : AudioProcessorEditor(&p), mWaveThumbnail(p, mSampleSelector), mADSR(p), processor(p),
+    : AudioProcessorEditor(&p), mWaveThumbnail(p, mSampleSelector), mADSR(p), mMidiNoteRangeComponent(p), processor(p),
     mSampleSelector(p),
     bgColour(p.getBgColour()),
     midColour(p.getMidColour()),
@@ -24,14 +24,16 @@ SammyAudioProcessorEditor::SammyAudioProcessorEditor(SammyAudioProcessor& p)
     addAndMakeVisible(mWaveThumbnail);
     addAndMakeVisible(mADSR);
     addAndMakeVisible(mSampleSelector);
+    addAndMakeVisible(mMidiNoteRangeComponent);
 
     mSampleSelector.onSampleButtonClicked = [this](int index) { updateUIForSample(index); }; // Important callback. This updates the UI
+    
     updateUIForSample(processor.getSelectedSampleIndex());
 
     startTimerHz(30);
 
     setColours();
-    setSize(900, 600);
+    setSize(1000, 700);
 }
 
 SammyAudioProcessorEditor::~SammyAudioProcessorEditor()
@@ -51,8 +53,9 @@ void SammyAudioProcessorEditor::resized()
     auto selectorHeight = 30;
 
     mSampleSelector.setBounds(area.removeFromTop(selectorHeight));
-    mWaveThumbnail.setBounds(area.removeFromTop(area.getHeight() / 2));
-    mADSR.setBounds(area.removeFromLeft(area.getWidth() / 2));
+    mWaveThumbnail.setBounds(area.removeFromTop(area.getHeight() / 2).reduced(12));
+    mADSR.setBounds(area.removeFromLeft(area.getWidth() / 2).reduced(12));
+    mMidiNoteRangeComponent.setBounds(area.removeFromTop(area.getHeight() / 2).reduced(12));
 }
 
 
@@ -71,4 +74,5 @@ void SammyAudioProcessorEditor::updateUIForSample(int sampleIndex)
     processor.selectSample(sampleIndex);
     mWaveThumbnail.setSampleIndex();
     mADSR.updateSettings();
+    mMidiNoteRangeComponent.updateSettings();
 }

@@ -19,8 +19,6 @@ WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p, SampleSelectorComponent& s)
     mStartPosSlider.setScrollWheelEnabled(false);
     mStartPosSlider.addListener(this); // Add listener
     addAndMakeVisible(mStartPosSlider);
-
-    mStartPosAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "START", mStartPosSlider);
     mStartPosSlider.setValue(0.f);
 
     mRandomStartSlider.setSliderStyle(Slider::SliderStyle::LinearBar);
@@ -31,8 +29,6 @@ WaveThumbnail::WaveThumbnail(SammyAudioProcessor& p, SampleSelectorComponent& s)
     mRandomStartSlider.setScrollWheelEnabled(false);
     mRandomStartSlider.addListener(this); // Add listener
     addAndMakeVisible(mRandomStartSlider);
-
-    mRandomStartAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processor.getAPVTS(), "RANDOMS", mRandomStartSlider);
     mRandomStartSlider.setValue(0.f);
 
     mZoomSlider.setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
@@ -58,12 +54,14 @@ void WaveThumbnail::paint(juce::Graphics& g)
 
     if (mShouldBePainting)
     {
+        mShouldDisplayError = false;
         if (auto* waveForm = processor.getWaveForm())
         {
             mStartPosSlider.setEnabled(true);
             mRandomStartSlider.setEnabled(true);
 
             auto startSliderPos = mStartPosSlider.getValue() / 100 / mZoomSlider.getMaxValue() * getWidth();
+
             auto playHeadPosition = processor.getPlayHeadPos() * getWidth();
 
             if (startSliderPos >= 0.f && startSliderPos <= getWidth())
@@ -247,6 +245,16 @@ void WaveThumbnail::sliderValueChanged(Slider* slider)
 
 void WaveThumbnail::setSampleIndex()
 {
+    auto selectedSampleIndex = processor.getSelectedSampleIndex();
+    auto startPosParamId = "START" + juce::String(selectedSampleIndex);
+    auto randomStartParamId = "RANDOMS" + juce::String(selectedSampleIndex);
+
+    if (processor.getAPVTS().getParameter(startPosParamId) && processor.getAPVTS().getParameter(randomStartParamId))
+    {
+        mStartPosAttachment.reset(new juce::AudioProcessorValueTreeState::SliderAttachment(processor.getAPVTS(), startPosParamId, mStartPosSlider));
+        mRandomStartAttachment.reset(new juce::AudioProcessorValueTreeState::SliderAttachment(processor.getAPVTS(), randomStartParamId, mRandomStartSlider));
+    }
+
     updateWaveForm();
     updateSettings();
     repaint();

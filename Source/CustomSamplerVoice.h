@@ -36,7 +36,8 @@ public:
 
 private:
     //==============================================================================
-    double pitchRatio = 0;
+    double pitchRatio = 60;
+    int startedMidiNoteNumber = 60;
     double sourceSamplePosition = 0;
     float lgain = 0, rgain = 0;
 

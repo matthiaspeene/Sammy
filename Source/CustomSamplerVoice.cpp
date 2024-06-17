@@ -23,8 +23,7 @@ void CustomSamplerVoice::startNote(int midiNoteNumber, float velocity, Synthesis
 {
     if (auto* sound = dynamic_cast<const CustomSamplerSound*> (s))
     {
-        DBG(sound->pitchOff);
-        DBG(midiNoteNumber);
+        startedMidiNoteNumber = midiNoteNumber;
 
         pitchRatio = std::pow(2.0, (midiNoteNumber + sound->pitchOff - sound->midiRootNote) / 12.0)
             * sound->sourceSampleRate / getSampleRate(); // Create a method for calculating pitch ofsset
@@ -108,14 +107,14 @@ void CustomSamplerVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int s
                 *outL++ += (l + r) * 0.5f;
             }
 
-            // GPT: here we should also adjust the pitchratio if sound->pitchOff has changed.
+            pitchRatio = std::pow(2.0, (startedMidiNoteNumber + playingSound->pitchOff - playingSound->midiRootNote) / 12.0)
+                * playingSound->sourceSampleRate / getSampleRate(); // Create a method for calculating pitch ofsset
 
             sourceSamplePosition += pitchRatio;
 
             playingSound->setPlayHeadPosition(sourceSamplePosition);
 
-
-            if (sourceSamplePosition > playingSound->length)
+            if (!adsr.isActive() || sourceSamplePosition > playingSound->length)
             {
                 stopNote(0.0f, false);
                 break;
