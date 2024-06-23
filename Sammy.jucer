@@ -10,10 +10,29 @@
       <FILE id="uXGlfV" name="ADSRComponent.cpp" compile="1" resource="0"
             file="Source/ADSRComponent.cpp"/>
       <FILE id="YwO2NG" name="ADSRComponent.h" compile="0" resource="0" file="Source/ADSRComponent.h"/>
+      <FILE id="ykk39Q" name="FilterComponent.cpp" compile="1" resource="0"
+            file="Source/FilterComponent.cpp"/>
+      <FILE id="IhbbgG" name="FilterComponent.h" compile="0" resource="0"
+            file="Source/FilterComponent.h"/>
+      <FILE id="JakNL1" name="Noisy.cpp" compile="1" resource="0" file="Source/Noisy.cpp"/>
+      <FILE id="CsIDxL" name="Noisy.h" compile="0" resource="0" file="Source/Noisy.h"/>
+      <FILE id="yBlUGF" name="PitchControll.cpp" compile="1" resource="0"
+            file="Source/PitchControll.cpp"/>
+      <FILE id="wgWw2F" name="PitchControll.h" compile="0" resource="0" file="Source/PitchControll.h"/>
       <FILE id="UbBEyA" name="SampleSelectorComponent.cpp" compile="1" resource="0"
             file="Source/SampleSelectorComponent.cpp"/>
       <FILE id="yMnPum" name="SampleSelectorComponent.h" compile="0" resource="0"
             file="Source/SampleSelectorComponent.h"/>
+      <FILE id="NWc9DV" name="SimpleCompression.cpp" compile="1" resource="0"
+            file="Source/SimpleCompression.cpp"/>
+      <FILE id="GGz59e" name="SimpleCompression.h" compile="0" resource="0"
+            file="Source/SimpleCompression.h"/>
+      <FILE id="JwZWah" name="SimpleDistortion.cpp" compile="1" resource="0"
+            file="Source/SimpleDistortion.cpp"/>
+      <FILE id="IOpUQB" name="SimpleDistortion.h" compile="0" resource="0"
+            file="Source/SimpleDistortion.h"/>
+      <FILE id="ONOHI4" name="SimpleEQ.cpp" compile="1" resource="0" file="Source/SimpleEQ.cpp"/>
+      <FILE id="daUyqv" name="SimpleEQ.h" compile="0" resource="0" file="Source/SimpleEQ.h"/>
       <FILE id="jnpuFP" name="WaveThumbnail.cpp" compile="1" resource="0"
             file="Source/WaveThumbnail.cpp"/>
       <FILE id="OFyIBp" name="WaveThumbnail.h" compile="0" resource="0" file="Source/WaveThumbnail.h"/>

@@ -147,10 +147,12 @@ void WaveThumbnail::filesDropped(const StringArray& files, int x, int y)
         }
     }
     mStartPosSlider.valueChanged();
-    processor.updateStartPos();
-    processor.updateStartRandom();
+    mRandomStartSlider.valueChanged();
+
     updateWaveForm();
+    
     sampleSelector.sampleLoaded(processor.getSelectedSampleIndex());
+    
     repaint();
 }
 
@@ -238,26 +240,6 @@ void WaveThumbnail::sliderValueChanged(Slider* slider)
     {
         processor.getStartPos() = mStartPosSlider.getValue();
     }
-
-    processor.updateStartPos();
-    processor.updateStartRandom();
-}
-
-void WaveThumbnail::setSampleIndex()
-{
-    auto selectedSampleIndex = processor.getSelectedSampleIndex();
-    auto startPosParamId = "START" + juce::String(selectedSampleIndex);
-    auto randomStartParamId = "RANDOMS" + juce::String(selectedSampleIndex);
-
-    if (processor.getAPVTS().getParameter(startPosParamId) && processor.getAPVTS().getParameter(randomStartParamId))
-    {
-        mStartPosAttachment.reset(new juce::AudioProcessorValueTreeState::SliderAttachment(processor.getAPVTS(), startPosParamId, mStartPosSlider));
-        mRandomStartAttachment.reset(new juce::AudioProcessorValueTreeState::SliderAttachment(processor.getAPVTS(), randomStartParamId, mRandomStartSlider));
-    }
-
-    updateWaveForm();
-    updateSettings();
-    repaint();
 }
 
 void WaveThumbnail::updateSettings()
@@ -265,9 +247,22 @@ void WaveThumbnail::updateSettings()
     const auto& startPos = processor.getStartPos();
     const auto& startRandom = processor.getStartRandom();
 
+    auto indexStr = juce::String(processor.getSelectedSampleIndex());
+
     mStartPosSlider.setValue(startPos, juce::dontSendNotification);
     mRandomStartSlider.setValue(startRandom, juce::dontSendNotification);
+
+    if (processor.getAPVTS().getParameter("START" + indexStr) &&
+        processor.getAPVTS().getParameter("RANDOMS" + indexStr)) 
+    {
+        mStartPosAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(
+            processor.getAPVTS(), "START" + indexStr, mStartPosSlider);
+        mRandomStartAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(
+            processor.getAPVTS(), "RANDOMS" + indexStr, mRandomStartSlider);
+    }
     
+    updateWaveForm();
+
     mShouldBePainting = true;
 }
 

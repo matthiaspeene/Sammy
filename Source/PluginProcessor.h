@@ -72,8 +72,13 @@ public:
     void updateRootNote(int rootNote);
 
     juce::ADSR::Parameters& getADSRParams() { return mSampleSettings[mSelectedSampleIndex].adsrParams; }
-    float& getStartPos() { return mSampleSettings[mSelectedSampleIndex].startPos; }
-    float& getStartRandom() { return mSampleSettings[mSelectedSampleIndex].startRandom; }
+
+    double& getStartPos() { 
+        return mSampleSettings[mSelectedSampleIndex].startPos;
+    }
+    float& getStartRandom() {
+        return mSampleSettings[mSelectedSampleIndex].startRandom;
+    }
 
     juce::AudioBuffer<float>* getWaveForm() {
         if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
@@ -85,7 +90,6 @@ public:
             return nullptr;
         }
     }
-
     double getPlayHeadPos() {
         if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
         {
@@ -95,7 +99,6 @@ public:
             return 0.0;
         }
     }
-
     juce::BigInteger getMidiNotes()
     {
         if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
@@ -109,7 +112,6 @@ public:
             return range;
         }
     }
-
     int getMidiRootNote()
     {
         if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
@@ -144,7 +146,7 @@ private:
     {
         juce::String name{ "Empty" };
         juce::ADSR::Parameters adsrParams;
-        float startPos{ 0.f };
+        double startPos{ 0.f };
         float startRandom{ 0.f };
         double pitchOffset{ 0.f };
 

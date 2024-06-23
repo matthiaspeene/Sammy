@@ -67,6 +67,8 @@ public:
     double getPlayHeadPosition() { return activeSamplePosition / length; }
     juce::BigInteger getMidiRange() { return midiNotes; }
     int getMidiRootNote() { return midiRootNote; }
+    float getStartPos() { return startPos; }
+    float getStartRandom() { return startRand;  }
 
     //==============================================================================
     bool appliesToNote(int midiNoteNumber) override;
@@ -81,7 +83,7 @@ private:
     double sourceSampleRate;
     BigInteger midiNotes;
     int length = 0, midiRootNote = 0;
-    int startPos{0};
+    double startPos{0};
     float startRand{0};
     double pitchOff{ 0 };
 

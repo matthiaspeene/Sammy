@@ -129,7 +129,8 @@ void ADSRComponent::updateSettings()
 
 void ADSRComponent::paint(juce::Graphics& g)
 {
-    g.fillAll(bgColour);
+    g.setColour(bgColour);
+    g.fillRoundedRectangle(getLocalBounds().toFloat(), 20.0f);
 }
 
 void ADSRComponent::resized()

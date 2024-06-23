@@ -23,7 +23,8 @@ SampleSelectorComponent::SampleSelectorComponent(SammyAudioProcessor& p) : proce
         sampleButtons[i].onClick = [this, i] { sampleButtonClicked(i); };
         sampleButtons[i].setColour(TextButton::ColourIds::buttonColourId, bgColour);
         sampleButtons[i].setColour(TextButton::ColourIds::textColourOffId, darkColour);
-        
+        sampleButtons[i].isConnectedOnBottom();
+        sampleButtons[i].setConnectedEdges(TextButton::ConnectedOnBottom);
         addAndMakeVisible(sampleButtons[i]);
     }
 
@@ -34,6 +35,8 @@ SampleSelectorComponent::SampleSelectorComponent(SammyAudioProcessor& p) : proce
     clearButton.onClick = [this]() { clearSampler(); };
     clearButton.setColour(TextButton::ColourIds::buttonColourId, modColour);
     clearButton.setColour(TextButton::ColourIds::textColourOffId, bgColour);
+    clearButton.isConnectedOnBottom();
+    clearButton.setConnectedEdges(TextButton::ConnectedOnBottom);
     addAndMakeVisible(clearButton);
 }
 
@@ -43,7 +46,6 @@ SampleSelectorComponent::~SampleSelectorComponent()
 
 void SampleSelectorComponent::paint(juce::Graphics& g)
 {
-    g.fillAll(bgColour);
 }
 
 void SampleSelectorComponent::resized()
@@ -56,7 +58,7 @@ void SampleSelectorComponent::resized()
 
     for (int i = 0; i < buttonCount; ++i)
     {
-        sampleButtons[i].setBounds(i * buttonWidth, 0, buttonWidth, 30);
+        sampleButtons[i].setBounds(i * buttonWidth, 0, buttonWidth, area.getHeight());
     }
 }
 
@@ -68,7 +70,7 @@ void SampleSelectorComponent::sampleLoaded(int index)
 void SampleSelectorComponent::clearSampler()
 {
     processor.removeCurrentSample();
-    sampleButtons[processor.getSelectedSampleIndex()].setButtonText("Empty" + processor.getSelectedSampleIndex());
+    sampleButtons[processor.getSelectedSampleIndex()].setButtonText("Empty " + juce::String(processor.getSelectedSampleIndex() + 1));
 }
 
 void SampleSelectorComponent::sampleButtonClicked(int index)

@@ -16,6 +16,12 @@
 #include "ADSRComponent.h"
 #include "SampleSelectorComponent.h"
 #include "MIDINoteRangeComponent.h"
+#include "Noisy.h"
+#include "FilterComponent.h"
+#include "PitchControll.h"
+#include "SimpleCompression.h"
+#include "SimpleDistortion.h"
+#include "SimpleEQ.h"
 
 //==============================================================================
 /**
@@ -24,7 +30,7 @@ class SammyAudioProcessorEditor : public juce::AudioProcessorEditor,
     public Timer
 {
 public:
-    SammyAudioProcessorEditor(SammyAudioProcessor&);
+    SammyAudioProcessorEditor(SammyAudioProcessor& p);
     ~SammyAudioProcessorEditor() override;
 
     //==============================================================================
@@ -40,6 +46,12 @@ private:
     ADSRComponent mADSR;
     SampleSelectorComponent mSampleSelector;
     MIDINoteRangeComponent mMidiNoteRangeComponent;
+    Noisy mNoisyComponent;
+    FilterComponent mFilterComponent;
+    PitchControll mPitchControll;
+    SimpleCompression mSimpleCompression;
+    SimpleDistortion mSimpleDistortion;
+    SimpleEQ mSimpleEQ;
 
     Colour& bgColour;
     Colour& midColour;
