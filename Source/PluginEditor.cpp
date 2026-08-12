@@ -26,6 +26,7 @@ SammyAudioProcessorEditor::SammyAudioProcessorEditor(SammyAudioProcessor& p)
     addAndMakeVisible(mSampleSelector);
 
     mSampleSelector.onSampleButtonClicked = [this](int index) { updateUIForSample(index); }; // Important callback. This updates the UI
+    updateUIForSample(processor.getSelectedSampleIndex());
 
     startTimerHz(30);
 

@@ -52,7 +52,7 @@ public:
     /** Returns the audio sample data.
         This could return nullptr if there was a problem loading the data.
     */
-    AudioBuffer<float>* getAudioData() const noexcept { return data.get(); }
+    AudioBuffer<float>* getAudioData() const noexcept { return data.get(); } //This pointer is used in teh
 
     //==============================================================================
     /** Changes the parameters of the ADSR envelope which will be applied to the sample. */
@@ -62,7 +62,10 @@ public:
     void setPitchOffset(double pitchOffset) { pitchOff = pitchOffset; }
     void setMidiRootNote(int rootNote) { midiRootNote = rootNote; }
     void setActiveMidiNotes(BigInteger notes) { midiNotes = notes; }
+    void setPlayHeadPosition(double position) { activeSamplePosition = position; }
     
+    double getPlayHeadPosition() { return activeSamplePosition * length; }
+
     //==============================================================================
     bool appliesToNote(int midiNoteNumber) override;
     bool appliesToChannel(int midiChannel) override;
@@ -76,9 +79,11 @@ private:
     double sourceSampleRate;
     BigInteger midiNotes;
     int length = 0, midiRootNote = 0;
-    int startPos;
-    float startRand;
+    int startPos{0};
+    float startRand{0};
     double pitchOff{ 0 };
+
+    double activeSamplePosition{ 0 };
 
     ADSR::Parameters params;
 

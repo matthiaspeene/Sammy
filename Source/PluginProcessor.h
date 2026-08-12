@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include <vector>
+#include "CustomSamplerSound.h"
 
 //==============================================================================
 /**
@@ -68,13 +69,34 @@ public:
     void updateStartRandom();
     void updatePitch();
 
-    float getPitchRatio() const;
-
     juce::ADSR::Parameters& getADSRParams() { return mSampleSettings[mSelectedSampleIndex].adsrParams; }
     float& getStartPos() { return mSampleSettings[mSelectedSampleIndex].startPos; }
     float& getStartRandom() { return mSampleSettings[mSelectedSampleIndex].startRandom; }
-    juce::AudioBuffer<float>& getWaveForm() { return mSampleSettings[mSelectedSampleIndex].audioBuffer; }
+
+    juce::AudioBuffer<float>* getWaveForm() {
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
+        {
+            return sound->getAudioData();
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
+    double getPlayHeadPos() {
+        if (auto sound = dynamic_cast<CustomSamplerSound*>(mSampleSettings[mSelectedSampleIndex].synth->getSound(0).get()))
+        {
+            return sound->getPlayHeadPosition();
+        }
+        else {
+            return 0.0;
+        }
+    }
+
+
     juce::String getSampleName() { return mSampleSettings[mSelectedSampleIndex].name; }
+
 
     std::atomic<bool>& isNotePlaying() { return mIsNotePlaying; }
     std::atomic<int>& getSampleCount() { return  mSampleCount; }
@@ -97,8 +119,8 @@ private:
         float startPos{ 0.f };
         float startRandom{ 0.f };
         double pitchOffset{ 0.f };
-        juce::AudioBuffer<float> audioBuffer;
         std::unique_ptr<juce::Synthesiser> synth;
+
 
         SampleSettings()
             : synth(std::make_unique<juce::Synthesiser>())
@@ -111,11 +133,11 @@ private:
 
         // Enable moving
         SampleSettings(SampleSettings&& other) noexcept
-            : adsrParams(std::move(other.adsrParams)),
+            : name(std::move(other.name)),
+            adsrParams(std::move(other.adsrParams)),
             startPos(other.startPos),
             startRandom(other.startRandom),
             pitchOffset(other.pitchOffset),
-            audioBuffer(std::move(other.audioBuffer)),
             synth(std::move(other.synth))
         {
         }
@@ -124,16 +146,19 @@ private:
         {
             if (this != &other)
             {
+                name = std::move(other.name);
                 adsrParams = std::move(other.adsrParams);
                 startPos = other.startPos;
                 startRandom = other.startRandom;
                 pitchOffset = other.pitchOffset;
-                audioBuffer = std::move(other.audioBuffer);
                 synth = std::move(other.synth);
             }
             return *this;
         }
+
+        ~SampleSettings() = default;  // `unique_ptr` will automatically handle cleanup
     };
+
 
     const int mNumSamplers{ 8 };
     const int mNumVoices{ 4 };
